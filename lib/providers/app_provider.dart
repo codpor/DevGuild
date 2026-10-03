@@ -394,6 +394,34 @@ class AppProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // ────────────── MODERATOR ACTIONS ──────────────
+  bool canModerateTicket() {
+    if (_currentUser == null) return false;
+    if (_currentUser!.role == 'Guru') return true;
+    return _currentUser!.activeRole == UserRole.moderator;
+  }
+
+  void forceMarkSolved(String ticketId) {
+    if (!canModerateTicket()) return;
+    final ticket = _tickets.firstWhere((t) => t.id == ticketId);
+    ticket.status = TicketStatus.solved;
+    notifyListeners();
+  }
+
+  void deleteReply(String ticketId, String replyId) {
+    if (!canModerateTicket()) return;
+    final ticket = _tickets.firstWhere((t) => t.id == ticketId);
+    ticket.replies.removeWhere((r) => r.id == replyId);
+    notifyListeners();
+  }
+
+  void updateTicketTitle(String ticketId, String newTitle) {
+    if (!canModerateTicket()) return;
+    final ticket = _tickets.firstWhere((t) => t.id == ticketId);
+    ticket.title = newTitle;
+    notifyListeners();
+  }
+
   // ────────────── PROJECT ACTIONS ──────────────
   void addProject(ProjectModel project) {
     _projects.insert(0, project);

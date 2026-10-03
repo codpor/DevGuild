@@ -394,7 +394,35 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         .firstWhere((t) => t.id == widget.ticket.id);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Detail Tiket')),
+      appBar: AppBar(
+        title: const Text('Detail Tiket'),
+        actions: [
+          if (provider.canModerateTicket())
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') {
+                  _showEditTitleDialog(context, provider, ticket);
+                } else if (value == 'close') {
+                  provider.forceMarkSolved(ticket.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Tiket ditutup oleh Moderator')),
+                  );
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Text('Edit Judul Tiket'),
+                ),
+                if (ticket.status != TicketStatus.solved)
+                  const PopupMenuItem(
+                    value: 'close',
+                    child: Text('Tutup Tiket (Solved)'),
+                  ),
+              ],
+            ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
@@ -576,6 +604,39 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
       ),
     );
   }
+
+  void _showEditTitleDialog(
+      BuildContext context, AppProvider provider, TicketModel ticket) {
+    final titleC = TextEditingController(text: ticket.title);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Judul Tiket'),
+        content: TextField(
+          controller: titleC,
+          decoration: const InputDecoration(labelText: 'Judul Baru'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (titleC.text.trim().isNotEmpty) {
+                provider.updateTicketTitle(ticket.id, titleC.text.trim());
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Judul tiket diperbarui')),
+                );
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ReplyCard extends StatelessWidget {
@@ -677,6 +738,18 @@ class _ReplyCard extends StatelessWidget {
                       fontWeight: FontWeight.bold),
                   padding: EdgeInsets.zero,
                 ),
+              if (Provider.of<AppProvider>(context, listen: false).canModerateTicket()) ...[
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: AppTheme.error, size: 20),
+                  onPressed: () {
+                    Provider.of<AppProvider>(context, listen: false).deleteReply(ticket.id, reply.id);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Balasan dihapus')));
+                  },
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 10),

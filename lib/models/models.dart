@@ -57,7 +57,7 @@ class TicketModel {
   final String authorId;
   final String authorName;
   final String authorKelas;
-  final String title;
+  String title;
   final String description;
   final String errorCode;
   final String category;
