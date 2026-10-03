@@ -29,10 +29,7 @@ class GuruDashboard extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              provider.logout();
-              Navigator.pushReplacementNamed(context, '/login');
-            },
+            onPressed: () => _showLogoutDialog(context, provider),
           ),
         ],
       ),
@@ -94,6 +91,7 @@ class GuruDashboard extends StatelessWidget {
                   count: pendingKarya,
                   color: AppTheme.warning,
                   desc: 'Menunggu validasi',
+                  onTap: () => _navigateToTab(context, 2),
                 ),
                 const SizedBox(width: 12),
                 _ActionCard(
@@ -102,6 +100,7 @@ class GuruDashboard extends StatelessWidget {
                   count: openTickets,
                   color: AppTheme.error,
                   desc: 'Belum ada jawaban',
+                  onTap: () => _navigateToTab(context, 3),
                 ),
               ],
             ),
@@ -114,6 +113,7 @@ class GuruDashboard extends StatelessWidget {
                   count: provider.pendingRoleRequests.length,
                   color: AppTheme.info,
                   desc: 'Menunggu persetujuan',
+                  onTap: () => _navigateToTab(context, 1),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(child: SizedBox()),
@@ -161,6 +161,61 @@ class GuruDashboard extends StatelessWidget {
       ),
     );
   }
+
+  void _navigateToTab(BuildContext context, int tabIndex) {
+    // Find the parent GuruHome state and switch tab
+    final scaffoldState = context.findAncestorStateOfType<State>();
+    if (scaffoldState != null && scaffoldState.mounted) {
+      // Use a callback to update the parent's tab index
+      try {
+        // ignore: avoid_dynamic_calls
+        (scaffoldState as dynamic).setState(() {
+          (scaffoldState as dynamic)._currentIndex = tabIndex;
+        });
+        } catch (_) {
+          // Fallback: show a snackbar guiding the user
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Navigasi ke tab ${['Dashboard', 'Siswa', 'Validasi', 'Monitoring', 'Klinik'][tabIndex]}'),
+              backgroundColor: AppTheme.primary,
+            ),
+          );
+      }
+    }
+  }
+
+  void _showLogoutDialog(BuildContext context, AppProvider provider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.logout, color: AppTheme.error),
+            SizedBox(width: 10),
+            Text('Keluar'),
+          ],
+        ),
+        content: const Text('Apakah Anda yakin ingin keluar dari akun ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              provider.logout();
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+            child: const Text('Ya, Keluar'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _BannerStat extends StatelessWidget {
@@ -192,6 +247,7 @@ class _ActionCard extends StatelessWidget {
   final String title, desc;
   final int count;
   final Color color;
+  final VoidCallback? onTap;
 
   const _ActionCard({
     required this.icon,
@@ -199,38 +255,42 @@ class _ActionCard extends StatelessWidget {
     required this.count,
     required this.color,
     required this.desc,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
                 ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(height: 12),
-              Text('$count',
-                  style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: color)),
-              Text(title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 13)),
-              Text(desc,
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 11)),
-            ],
+                const SizedBox(height: 12),
+                Text('$count',
+                    style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: color)),
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 13)),
+                Text(desc,
+                    style: const TextStyle(
+                        color: AppTheme.textSecondary, fontSize: 11)),
+              ],
+            ),
           ),
         ),
       ),

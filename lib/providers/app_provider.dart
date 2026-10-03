@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../data/mock_users.dart';
 
 class AppProvider with ChangeNotifier {
   // ────────────── CURRENT USER ──────────────
@@ -26,78 +27,7 @@ class AppProvider with ChangeNotifier {
   static const int moderatorMinAnswered = 10;
 
   // ────────────── MOCK USERS ──────────────
-  final List<UserModel> _users = [
-    UserModel(
-      id: 'u1',
-      nis: 'admin',
-      name: 'Budi Santoso, S.Kom',
-      kelas: 'Guru PPLG',
-      role: 'Guru',
-      poin: 0,
-      badges: ['Admin', 'Founder'],
-    ),
-    UserModel(
-      id: 'u2',
-      nis: '2201',
-      name: 'Arif Fakhry',
-      kelas: 'XII PPLG 1',
-      role: 'Siswa',
-      activeRole: UserRole.mentor,
-      poin: 320,
-      ticketsCreated: 5,
-      ticketsAnswered: 12,
-      badges: ['Early Adopter', 'Top Mentor', 'Problem Solver'],
-      activities: [
-        ActivityItem(
-          title: 'Menjawab Tiket',
-          description: 'Error koneksi database MySQL',
-          time: DateTime.now().subtract(const Duration(hours: 2)),
-          icon: 'reply',
-        ),
-        ActivityItem(
-          title: 'Upload Karya',
-          description: 'Aplikasi Kasir Sederhana',
-          time: DateTime.now().subtract(const Duration(days: 1)),
-          icon: 'upload',
-        ),
-      ],
-    ),
-    UserModel(
-      id: 'u3',
-      nis: '2202',
-      name: 'Siti Rahayu',
-      kelas: 'XI PPLG 2',
-      role: 'Siswa',
-      activeRole: UserRole.mentee,
-      poin: 80,
-      ticketsCreated: 8,
-      ticketsAnswered: 2,
-      badges: ['Curious Coder'],
-    ),
-    UserModel(
-      id: 'u4',
-      nis: '2203',
-      name: 'Dimas Pratama',
-      kelas: 'XII PPLG 2',
-      role: 'Siswa',
-      activeRole: UserRole.moderator,
-      poin: 210,
-      ticketsCreated: 3,
-      ticketsAnswered: 9,
-      badges: ['Moderator', 'Bug Hunter'],
-    ),
-    UserModel(
-      id: 'u5',
-      nis: '2204',
-      name: 'Nadia Kusuma',
-      kelas: 'X PPLG 1',
-      role: 'Siswa',
-      poin: 45,
-      ticketsCreated: 10,
-      ticketsAnswered: 1,
-      badges: [],
-    ),
-  ];
+  final List<UserModel> _users = List.from(mockUsers);
 
   List<UserModel> get allUsers => _users.where((u) => u.role == 'Siswa').toList();
 
@@ -282,6 +212,7 @@ class AppProvider with ChangeNotifier {
     if (password.isEmpty) return false;
     final user = _users.where((u) => u.nis == nis).firstOrNull;
     if (user == null) return false;
+    if (user.password != password) return false;
     _currentUser = user;
     notifyListeners();
     return true;
@@ -297,6 +228,7 @@ class AppProvider with ChangeNotifier {
     final newUser = UserModel(
       id: 'u${_users.length + 1}',
       nis: nis,
+      password: password,
       name: name,
       kelas: kelas,
       role: 'Siswa',
@@ -424,7 +356,8 @@ class AppProvider with ChangeNotifier {
   bool canReplyToTicket() {
     if (_currentUser == null) return false;
     if (_currentUser!.role == 'Guru') return true;
-    return _currentUser!.activeRole == UserRole.mentor;
+    return _currentUser!.activeRole == UserRole.mentor ||
+        _currentUser!.activeRole == UserRole.moderator;
   }
 
   void addReply(String ticketId, ReplyModel reply) {

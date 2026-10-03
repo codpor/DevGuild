@@ -3,6 +3,7 @@ import 'guru_dashboard.dart';
 import 'guru_manajemen.dart';
 import 'guru_validasi.dart';
 import 'guru_monitoring.dart';
+import '../siswa/clinic_tab.dart';
 
 class GuruHome extends StatefulWidget {
   const GuruHome({super.key});
@@ -18,6 +19,7 @@ class _GuruHomeState extends State<GuruHome> {
     GuruManajemen(),
     GuruValidasi(),
     GuruMonitoring(),
+    ClinicTab(),
   ];
 
   @override
@@ -36,6 +38,8 @@ class _GuruHomeState extends State<GuruHome> {
               icon: Icon(Icons.task_alt_outlined), label: 'Validasi'),
           BottomNavigationBarItem(
               icon: Icon(Icons.monitor_heart_outlined), label: 'Monitoring'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.bug_report_outlined), label: 'Klinik'),
         ],
       ),
     );

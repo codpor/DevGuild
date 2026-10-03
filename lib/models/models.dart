@@ -8,6 +8,7 @@ enum RoleRequestStatus { pending, approved, rejected }
 class UserModel {
   final String id;
   final String nis;
+  final String password;
   final String name;
   final String kelas;
   final String role; // 'Siswa' or 'Guru'
@@ -22,6 +23,7 @@ class UserModel {
   UserModel({
     required this.id,
     required this.nis,
+    this.password = '123456', // default password for mock data
     required this.name,
     required this.kelas,
     required this.role,

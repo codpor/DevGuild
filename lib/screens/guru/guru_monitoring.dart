@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
+import '../siswa/clinic_tab.dart';
 
 class GuruMonitoring extends StatelessWidget {
   const GuruMonitoring({super.key});
@@ -168,41 +169,52 @@ class _MonitoringTicketTile extends StatelessWidget {
         break;
     }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Container(
-              width: 6,
-              height: 50,
-              decoration: BoxDecoration(
-                color: statusColor,
-                borderRadius: BorderRadius.circular(3),
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => TicketDetailScreen(ticket: ticket),
+        ),
+      ),
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(
+                width: 6,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.circular(3),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(ticket.title,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  Text(
-                      '${ticket.authorName} · ${ticket.replies.length} balasan',
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 12)),
-                ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(ticket.title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    Text(
+                        '${ticket.authorName} · ${ticket.replies.length} balasan',
+                        style: const TextStyle(
+                            color: AppTheme.textSecondary, fontSize: 12)),
+                  ],
+                ),
               ),
-            ),
-            Text(ticket.category,
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 11)),
-          ],
+              Text(ticket.category,
+                  style: const TextStyle(
+                      color: AppTheme.textSecondary, fontSize: 11)),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right,
+                  size: 18, color: AppTheme.textSecondary),
+            ],
+          ),
         ),
       ),
     );

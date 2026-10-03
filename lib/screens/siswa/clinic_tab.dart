@@ -34,9 +34,12 @@ class _ClinicTabState extends State<ClinicTab> {
 
     // search
     if (_searchC.text.isNotEmpty) {
+      final q = _searchC.text.toLowerCase();
       tickets = tickets
           .where((t) =>
-              t.title.toLowerCase().contains(_searchC.text.toLowerCase()))
+              t.title.toLowerCase().contains(q) ||
+              t.description.toLowerCase().contains(q) ||
+              t.errorCode.toLowerCase().contains(q))
           .toList();
     }
 
@@ -563,7 +566,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   Icon(Icons.lock_outline, size: 16, color: AppTheme.textSecondary),
                   const SizedBox(width: 8),
                   Text(
-                    'Hanya Mentor yang dapat menjawab tiket',
+                    'Hanya Mentor/Moderator yang dapat menjawab tiket',
                     style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                   ),
                 ],

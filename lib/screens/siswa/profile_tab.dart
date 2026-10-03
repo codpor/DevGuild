@@ -142,10 +142,7 @@ class ProfileTab extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () {
-                        provider.logout();
-                        Navigator.pushReplacementNamed(context, '/login');
-                      },
+                      onPressed: () => _showLogoutDialog(context, provider),
                       icon: const Icon(Icons.logout, color: AppTheme.error),
                       label: const Text('Keluar',
                           style: TextStyle(color: AppTheme.error)),
@@ -162,6 +159,38 @@ class ProfileTab extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showLogoutDialog(BuildContext context, AppProvider provider) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Row(
+        children: [
+          Icon(Icons.logout, color: AppTheme.error),
+          SizedBox(width: 10),
+          Text('Keluar'),
+        ],
+      ),
+      content: const Text('Apakah kamu yakin ingin keluar dari akun ini?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Batal'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(ctx);
+            provider.logout();
+            Navigator.pushReplacementNamed(context, '/login');
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+          child: const Text('Ya, Keluar'),
+        ),
+      ],
+    ),
+  );
 }
 
 // ══════════════════════════════════════════════════════
