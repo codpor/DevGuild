@@ -190,8 +190,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                           ),
                           const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Wrap(
+                            alignment: WrapAlignment.center,
                             children: [
                               const Text(AppStrings.hasAccount),
                               GestureDetector(
