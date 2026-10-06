@@ -23,7 +23,7 @@ class UserModel {
   UserModel({
     required this.id,
     required this.nis,
-    this.password = '123456', // default password for mock data
+    this.password = '', // stored as SHA-256 hash, empty for Guru
     required this.name,
     required this.kelas,
     required this.role,

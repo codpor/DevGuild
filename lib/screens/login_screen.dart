@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_provider.dart';
+import 'package:go_router/go_router.dart';
+import '../providers/auth_provider.dart';
 import '../theme.dart';
-import 'register_screen.dart';
+import '../constants/app_strings.dart';
+import '../utils/validators.dart';
+import '../utils/result.dart';
+import '../router/app_router.dart';
+import '../models/models.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,10 +18,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
   final _nisController = TextEditingController();
   final _passwordController = TextEditingController();
+  
   bool _obscurePassword = true;
   bool _isLoading = false;
+  
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
@@ -39,22 +47,26 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+    
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 600)); // Simulasi network
     if (!mounted) return;
 
-    final ok = Provider.of<AppProvider>(context, listen: false)
-        .login(_nisController.text.trim(), _passwordController.text);
+    final result = context.read<AuthProvider>().login(
+      _nisController.text,
+      _passwordController.text,
+    );
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (ok) {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
+    if (result is Success<UserModel>) {
+      context.go(AppRoutes.home);
+    } else if (result is Failure<UserModel>) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('NIS atau Password salah!'),
+        SnackBar(
+          content: Text(result.message),
           backgroundColor: AppTheme.error,
         ),
       );
@@ -86,13 +98,13 @@ class _LoginScreenState extends State<LoginScreen>
                           size: 52, color: Colors.white),
                     ),
                     const SizedBox(height: 20),
-                    Text('DevGuild',
+                    Text(AppStrings.appName,
                         style: Theme.of(context)
                             .textTheme
                             .displayMedium
                             ?.copyWith(color: Colors.white)),
                     const SizedBox(height: 6),
-                    Text('Inkubator Karya & Klinik Kode PPLG',
+                    Text(AppStrings.appTagline,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.white.withValues(alpha: 0.85))),
                     const SizedBox(height: 40),
@@ -111,67 +123,68 @@ class _LoginScreenState extends State<LoginScreen>
                         ],
                       ),
                       padding: const EdgeInsets.all(28),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text('Masuk',
-                              style: Theme.of(context).textTheme.titleLarge),
-                          const SizedBox(height: 24),
-                          TextField(
-                            controller: _nisController,
-                            decoration: const InputDecoration(
-                              labelText: 'NIS',
-                              prefixIcon:
-                                  Icon(Icons.badge_outlined),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: _passwordController,
-                            obscureText: _obscurePassword,
-                            onSubmitted: (_) => _login(),
-                            decoration: InputDecoration(
-                              labelText: 'Password',
-                              prefixIcon: const Icon(Icons.lock_outline),
-                              suffixIcon: IconButton(
-                                icon: Icon(_obscurePassword
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined),
-                                onPressed: () => setState(
-                                    () => _obscurePassword = !_obscurePassword),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(AppStrings.login,
+                                style: Theme.of(context).textTheme.titleLarge),
+                            const SizedBox(height: 24),
+                            TextFormField(
+                              controller: _nisController,
+                              validator: Validators.validateNIS,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: AppStrings.nisLabel,
+                                prefixIcon: Icon(Icons.badge_outlined),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 28),
-                          SizedBox(
-                            height: 52,
-                            child: _isLoading
-                                ? const Center(
-                                    child: CircularProgressIndicator())
-                                : ElevatedButton(
-                                    onPressed: _login,
-                                    child: const Text('Masuk'),
-                                  ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('Belum punya akun? '),
-                              GestureDetector(
-                                onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const RegisterScreen())),
-                                child: const Text('Daftar',
-                                    style: TextStyle(
-                                        color: AppTheme.primary,
-                                        fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              validator: Validators.validatePassword,
+                              onFieldSubmitted: (_) => _login(),
+                              decoration: InputDecoration(
+                                labelText: AppStrings.passwordLabel,
+                                prefixIcon: const Icon(Icons.lock_outline),
+                                suffixIcon: IconButton(
+                                  icon: Icon(_obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined),
+                                  onPressed: () => setState(
+                                      () => _obscurePassword = !_obscurePassword),
+                                ),
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(height: 28),
+                            SizedBox(
+                              height: 52,
+                              child: _isLoading
+                                  ? const Center(
+                                      child: CircularProgressIndicator())
+                                  : ElevatedButton(
+                                      onPressed: _login,
+                                      child: const Text(AppStrings.login),
+                                    ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(AppStrings.noAccount),
+                                GestureDetector(
+                                  onTap: () => context.push(AppRoutes.register),
+                                  child: const Text(AppStrings.register,
+                                      style: TextStyle(
+                                          color: AppTheme.primary,
+                                          fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
@@ -186,17 +199,17 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                       child: Column(
                         children: [
-                          Text('Demo Login',
+                          Text(AppStrings.demoLogin,
                               style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.9),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12)),
                           const SizedBox(height: 4),
-                          Text('Siswa: NIS 2201  |  Guru: NIS admin',
+                          Text(AppStrings.demoLoginSiswa,
                               style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.75),
                                   fontSize: 11)),
-                          Text('Password: apa saja (tidak kosong)',
+                          Text(AppStrings.demoLoginGuru,
                               style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.75),
                                   fontSize: 11)),

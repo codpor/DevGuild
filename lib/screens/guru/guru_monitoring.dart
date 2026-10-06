@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_provider.dart';
+import '../../providers/ticket_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
 import '../siswa/clinic_tab.dart';
@@ -10,7 +10,7 @@ class GuruMonitoring extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
+    final provider = Provider.of<TicketProvider>(context);
     final tickets = provider.allTickets;
     final openT = tickets.where((t) => t.status == TicketStatus.open).toList();
     final inProgT =

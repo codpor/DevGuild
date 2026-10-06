@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/role_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
 
@@ -9,8 +10,8 @@ class ProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final user = provider.currentUser!;
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.currentUser!;
 
     return Scaffold(
       body: CustomScrollView(
@@ -142,7 +143,7 @@ class ProfileTab extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => _showLogoutDialog(context, provider),
+                      onPressed: () => _showLogoutDialog(context, authProvider),
                       icon: const Icon(Icons.logout, color: AppTheme.error),
                       label: const Text('Keluar',
                           style: TextStyle(color: AppTheme.error)),
@@ -161,7 +162,7 @@ class ProfileTab extends StatelessWidget {
   }
 }
 
-void _showLogoutDialog(BuildContext context, AppProvider provider) {
+void _showLogoutDialog(BuildContext context, AuthProvider provider) {
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -202,9 +203,10 @@ class _RoleSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final user = provider.currentUser!;
-    final pendingRequest = provider.getPendingRequest(user.id);
+    final authProvider = Provider.of<AuthProvider>(context);
+    final roleProvider = Provider.of<RoleProvider>(context);
+    final user = authProvider.currentUser!;
+    final pendingRequest = roleProvider.getPendingRequest(user.id);
 
     return Card(
       child: Padding(
@@ -229,7 +231,7 @@ class _RoleSwitcher extends StatelessWidget {
                   desc: 'Bertanya',
                   role: UserRole.mentee,
                   current: currentRole,
-                  onTap: () => provider.switchToMentee(),
+                  onTap: () => roleProvider.switchToMentee(),
                 ),
                 const SizedBox(width: 8),
                 _RoleButton(
@@ -289,14 +291,15 @@ class _RoleSwitcher extends StatelessWidget {
   }
 
   void _showRoleRequestDialog(BuildContext context, UserRole role) {
-    final provider = Provider.of<AppProvider>(context, listen: false);
-    final user = provider.currentUser!;
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final roleProvider = Provider.of<RoleProvider>(context, listen: false);
+    final user = authProvider.currentUser!;
 
     // Jika sudah role tersebut, tidak perlu request
     if (user.activeRole == role) return;
 
     // Jika sudah ada pending request
-    if (provider.hasPendingRoleRequest(user.id)) {
+    if (roleProvider.hasPendingRoleRequest(user.id)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Kamu sudah memiliki permohonan yang sedang diproses.'),
@@ -308,10 +311,10 @@ class _RoleSwitcher extends StatelessWidget {
 
     final isMentor = role == UserRole.mentor;
     final requirements = isMentor
-        ? provider.getMentorRequirements(user)
-        : provider.getModeratorRequirements(user);
+        ? roleProvider.getMentorRequirements(user)
+        : roleProvider.getModeratorRequirements(user);
     final canApply =
-        isMentor ? provider.canBecomeMentor(user) : provider.canBecomeModerator(user);
+        isMentor ? roleProvider.canBecomeMentor(user) : roleProvider.canBecomeModerator(user);
     final roleLabel = isMentor ? 'Mentor' : 'Moderator';
 
     showModalBottomSheet(
@@ -452,7 +455,7 @@ class _RoleSwitcher extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: () {
-                  provider.submitRoleRequest(role);
+                  roleProvider.submitRoleRequest(role);
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

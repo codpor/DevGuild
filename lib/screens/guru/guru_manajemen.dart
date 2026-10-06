@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/role_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
 
@@ -28,9 +29,10 @@ class _GuruManajemenState extends State<GuruManajemen>
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final users = provider.allUsers;
-    final pendingRequests = provider.pendingRoleRequests;
+    final authProvider = Provider.of<AuthProvider>(context);
+    final roleProvider = Provider.of<RoleProvider>(context);
+    final users = authProvider.allUsers;
+    final pendingRequests = roleProvider.pendingRoleRequests;
 
     return Scaffold(
       appBar: AppBar(
@@ -74,7 +76,7 @@ class _GuruManajemenState extends State<GuruManajemen>
           // ── Tab 1: Daftar Siswa
           _SiswaListTab(users: users),
           // ── Tab 2: Permohonan Role
-          _RoleRequestsTab(provider: provider),
+          _RoleRequestsTab(roleProvider: roleProvider),
         ],
       ),
     );
@@ -110,7 +112,7 @@ class _SiswaListTab extends StatelessWidget {
           child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: users.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            separatorBuilder: (context, index) => const SizedBox(height: 8),
             itemBuilder: (context, i) {
               final user = users[i];
               return Card(
@@ -195,13 +197,13 @@ class _SiswaListTab extends StatelessWidget {
 //  TAB 2: PERMOHONAN ROLE
 // ══════════════════════════════════════════════════
 class _RoleRequestsTab extends StatelessWidget {
-  final AppProvider provider;
-  const _RoleRequestsTab({required this.provider});
+  final RoleProvider roleProvider;
+  const _RoleRequestsTab({required this.roleProvider});
 
   @override
   Widget build(BuildContext context) {
-    final pending = provider.pendingRoleRequests;
-    final history = provider.allRoleRequests
+    final pending = roleProvider.pendingRoleRequests;
+    final history = roleProvider.allRoleRequests
         .where((r) => r.status != RoleRequestStatus.pending)
         .toList();
 
@@ -229,7 +231,7 @@ class _RoleRequestsTab extends StatelessWidget {
             ),
 
           ...pending.map(
-              (req) => _RoleRequestCard(request: req, provider: provider)),
+              (req) => _RoleRequestCard(request: req, roleProvider: roleProvider)),
 
           // ── History
           if (history.isNotEmpty) ...[
@@ -260,9 +262,9 @@ class _RoleRequestsTab extends StatelessWidget {
 
 class _RoleRequestCard extends StatelessWidget {
   final RoleRequestModel request;
-  final AppProvider provider;
+  final RoleProvider roleProvider;
   const _RoleRequestCard(
-      {required this.request, required this.provider});
+      {required this.request, required this.roleProvider});
 
   @override
   Widget build(BuildContext context) {
@@ -366,7 +368,7 @@ class _RoleRequestCard extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      provider.approveRoleRequest(request.id);
+                      roleProvider.approveRoleRequest(request.id);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
@@ -411,7 +413,7 @@ class _RoleRequestCard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              provider.rejectRoleRequest(
+              roleProvider.rejectRoleRequest(
                   requestId, feedbackC.text.trim());
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(

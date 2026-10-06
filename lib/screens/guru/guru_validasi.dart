@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_provider.dart';
+import '../../providers/project_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
 
@@ -28,9 +28,9 @@ class _GuruValidasiState extends State<GuruValidasi>
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final pending = provider.pendingProjects;
-    final validated = provider.validatedProjects;
+    final projectProvider = Provider.of<ProjectProvider>(context);
+    final pending = projectProvider.pendingProjects;
+    final validated = projectProvider.validatedProjects;
 
     return Scaffold(
       appBar: AppBar(
@@ -66,7 +66,7 @@ class _GuruValidasiState extends State<GuruValidasi>
               : ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: pending.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
                   itemBuilder: (context, i) =>
                       _PendingProjectCard(project: pending[i]),
                 ),
@@ -77,7 +77,7 @@ class _GuruValidasiState extends State<GuruValidasi>
               : ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: validated.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
                   itemBuilder: (context, i) => _ValidatedCard(project: validated[i]),
                 ),
         ],
@@ -92,7 +92,7 @@ class _PendingProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context, listen: false);
+    final projectProvider = Provider.of<ProjectProvider>(context, listen: false);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -162,7 +162,7 @@ class _PendingProjectCard extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () =>
-                        _showRejectDialog(context, provider, project),
+                        _showRejectDialog(context, projectProvider, project),
                     icon: const Icon(Icons.close, color: AppTheme.error, size: 18),
                     label: const Text('Tolak',
                         style: TextStyle(color: AppTheme.error)),
@@ -174,7 +174,7 @@ class _PendingProjectCard extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      provider.validateProject(project.id, true);
+                      projectProvider.validateProject(project.id, true);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Karya disetujui & masuk Showcase!'),
@@ -197,7 +197,7 @@ class _PendingProjectCard extends StatelessWidget {
   }
 
 void _showRejectDialog(
-    BuildContext context, AppProvider provider, ProjectModel project) {
+    BuildContext context, ProjectProvider provider, ProjectModel project) {
   final feedbackC = TextEditingController();
   showDialog(
     context: context,

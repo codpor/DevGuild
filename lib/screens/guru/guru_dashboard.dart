@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_provider.dart';
+import 'package:go_router/go_router.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/ticket_provider.dart';
+import '../../providers/project_provider.dart';
+import '../../providers/role_provider.dart';
+import '../../router/app_router.dart';
 import '../../theme.dart';
 
 class GuruDashboard extends StatelessWidget {
@@ -8,12 +13,16 @@ class GuruDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final user = provider.currentUser!;
-    final totalSiswa = provider.allUsers.length;
-    final openTickets = provider.openTickets.length;
-    final pendingKarya = provider.pendingProjects.length;
-    final totalKarya = provider.allProjects.length;
+    final authProvider = Provider.of<AuthProvider>(context);
+    final ticketProvider = Provider.of<TicketProvider>(context);
+    final projectProvider = Provider.of<ProjectProvider>(context);
+    final roleProvider = Provider.of<RoleProvider>(context);
+    
+    final user = authProvider.currentUser!;
+    final totalSiswa = authProvider.allUsers.length;
+    final openTickets = ticketProvider.openTickets.length;
+    final pendingKarya = projectProvider.pendingProjects.length;
+    final totalKarya = projectProvider.allProjects.length;
 
     return Scaffold(
       appBar: AppBar(
@@ -29,7 +38,7 @@ class GuruDashboard extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => _showLogoutDialog(context, provider),
+            onPressed: () => _showLogoutDialog(context, authProvider),
           ),
         ],
       ),
@@ -69,7 +78,7 @@ class GuruDashboard extends StatelessWidget {
                       _BannerStat(value: '$totalSiswa', label: 'Siswa Aktif'),
                       _BannerStat(value: '$totalKarya', label: 'Karya Total'),
                       _BannerStat(
-                          value: '${provider.leaderboard.isNotEmpty ? provider.leaderboard.first.poin : 0}',
+                          value: '${authProvider.leaderboard.isNotEmpty ? authProvider.leaderboard.first.poin : 0}',
                           label: 'Poin Tertinggi'),
                     ],
                   ),
@@ -110,7 +119,7 @@ class GuruDashboard extends StatelessWidget {
                 _ActionCard(
                   icon: Icons.how_to_reg_outlined,
                   title: 'Permohonan Role',
-                  count: provider.pendingRoleRequests.length,
+                  count: roleProvider.pendingRoleRequests.length,
                   color: AppTheme.info,
                   desc: 'Menunggu persetujuan',
                   onTap: () => _navigateToTab(context, 1),
@@ -126,7 +135,7 @@ class GuruDashboard extends StatelessWidget {
                 style:
                     TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
-            ...provider.leaderboard
+            ...authProvider.leaderboard
                 .take(5)
                 .toList()
                 .asMap()
@@ -185,7 +194,7 @@ class GuruDashboard extends StatelessWidget {
     }
   }
 
-  void _showLogoutDialog(BuildContext context, AppProvider provider) {
+  void _showLogoutDialog(BuildContext context, AuthProvider provider) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -207,7 +216,7 @@ class GuruDashboard extends StatelessWidget {
             onPressed: () {
               Navigator.pop(ctx);
               provider.logout();
-              Navigator.pushReplacementNamed(context, '/login');
+              context.go(AppRoutes.login);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
             child: const Text('Ya, Keluar'),

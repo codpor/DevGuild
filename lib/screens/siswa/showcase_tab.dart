@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/project_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
 
@@ -10,7 +11,7 @@ class ShowcaseTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
+    final provider = Provider.of<ProjectProvider>(context);
     final projects = provider.validatedProjects;
 
     return Scaffold(
@@ -47,8 +48,9 @@ class ShowcaseTab extends StatelessWidget {
     final teamC = TextEditingController();
     final techC = TextEditingController();
     String category = 'Web App';
-    final provider = Provider.of<AppProvider>(context, listen: false);
-    final user = provider.currentUser!;
+    final projectProvider = Provider.of<ProjectProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.currentUser!;
 
     showModalBottomSheet(
       context: context,
@@ -208,7 +210,7 @@ class ShowcaseTab extends StatelessWidget {
                     final techList = techC.text.isEmpty
                         ? <String>[]
                         : techC.text.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-                    provider.addProject(ProjectModel(
+                    projectProvider.addProject(ProjectModel(
                       id: 'p${DateTime.now().millisecondsSinceEpoch}',
                       authorId: user.id,
                       authorName: user.name,
@@ -373,7 +375,7 @@ class ProjectDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
+    final provider = Provider.of<ProjectProvider>(context);
     final catColor = _categoryColor(project.category);
     // Get fresh project data from provider
     final freshProject = provider.allProjects.firstWhere(

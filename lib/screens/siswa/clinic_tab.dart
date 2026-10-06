@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/ticket_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
 
@@ -16,10 +17,11 @@ class _ClinicTabState extends State<ClinicTab> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final user = provider.currentUser!;
+    final ticketProvider = Provider.of<TicketProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.currentUser!;
 
-    List<TicketModel> tickets = provider.allTickets;
+    List<TicketModel> tickets = ticketProvider.allTickets;
 
     // filter by status
     if (_filter == 'Terbuka') {
@@ -111,7 +113,7 @@ class _ClinicTabState extends State<ClinicTab> {
                 : ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: tickets.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (context, index) => const SizedBox(height: 12),
                     itemBuilder: (context, i) =>
                         _TicketCard(ticket: tickets[i]),
                   ),
@@ -133,8 +135,9 @@ class _ClinicTabState extends State<ClinicTab> {
     final descC = TextEditingController();
     final errorC = TextEditingController();
     String category = 'PHP & MySQL';
-    final provider = Provider.of<AppProvider>(context, listen: false);
-    final user = provider.currentUser!;
+    final provider = Provider.of<TicketProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.currentUser!;
 
     showModalBottomSheet(
       context: context,
@@ -388,22 +391,23 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final user = provider.currentUser!;
-    final ticket = provider.allTickets
+    final ticketProvider = Provider.of<TicketProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.currentUser!;
+    final ticket = ticketProvider.allTickets
         .firstWhere((t) => t.id == widget.ticket.id);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detail Tiket'),
         actions: [
-          if (provider.canModerateTicket())
+          if (authProvider.canModerateTicket())
             PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'edit') {
-                  _showEditTitleDialog(context, provider, ticket);
+                  _showEditTitleDialog(context, ticketProvider, ticket);
                 } else if (value == 'close') {
-                  provider.forceMarkSolved(ticket.id);
+                  ticketProvider.forceMarkSolved(ticket.id);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Tiket ditutup oleh Moderator')),
                   );
@@ -500,7 +504,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       ticket: ticket,
                       currentUser: user,
                       onAccept: () {
-                        provider.markSolved(ticket.id, reply.id);
+                        ticketProvider.markSolved(ticket.id, reply.id);
                       },
                     )),
                 if (ticket.replies.isEmpty)
@@ -525,7 +529,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           ),
 
           // ── Reply input (hanya untuk Mentor / Guru)
-          if (ticket.status != TicketStatus.solved && provider.canReplyToTicket())
+          if (ticket.status != TicketStatus.solved && authProvider.canReplyToTicket())
             Container(
               padding: EdgeInsets.only(
                 left: 16,
@@ -562,7 +566,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       icon: const Icon(Icons.send, color: Colors.white, size: 20),
                       onPressed: () {
                         if (_replyC.text.isEmpty) return;
-                        provider.addReply(
+                        ticketProvider.addReply(
                           ticket.id,
                           ReplyModel(
                             id: 'r${DateTime.now().millisecondsSinceEpoch}',
@@ -581,7 +585,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               ),
             ),
           // ── Info: hanya mentor yang bisa menjawab
-          if (ticket.status != TicketStatus.solved && !provider.canReplyToTicket())
+          if (ticket.status != TicketStatus.solved && !authProvider.canReplyToTicket())
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
@@ -606,7 +610,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 
   void _showEditTitleDialog(
-      BuildContext context, AppProvider provider, TicketModel ticket) {
+      BuildContext context, TicketProvider provider, TicketModel ticket) {
     final titleC = TextEditingController(text: ticket.title);
     showDialog(
       context: context,
@@ -738,12 +742,12 @@ class _ReplyCard extends StatelessWidget {
                       fontWeight: FontWeight.bold),
                   padding: EdgeInsets.zero,
                 ),
-              if (Provider.of<AppProvider>(context, listen: false).canModerateTicket()) ...[
+              if (Provider.of<AuthProvider>(context, listen: false).canModerateTicket()) ...[
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.delete_outline, color: AppTheme.error, size: 20),
                   onPressed: () {
-                    Provider.of<AppProvider>(context, listen: false).deleteReply(ticket.id, reply.id);
+                    Provider.of<TicketProvider>(context, listen: false).deleteReply(ticket.id, reply.id);
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Balasan dihapus')));
                   },
                   constraints: const BoxConstraints(),

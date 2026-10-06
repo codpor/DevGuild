@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_provider.dart';
+import 'package:go_router/go_router.dart';
+import '../providers/auth_provider.dart';
 import '../theme.dart';
+import '../constants/app_strings.dart';
+import '../utils/validators.dart';
+import '../utils/result.dart';
+import '../router/app_router.dart';
+import '../models/models.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,45 +17,40 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _nisC = TextEditingController();
   final _nameC = TextEditingController();
   final _passwordC = TextEditingController();
-  bool _obscure = true;
+  final _confirmPasswordC = TextEditingController();
+  
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
   bool _isLoading = false;
-  String _selectedKelas = 'X PPLG 1';
-
-  final List<String> _kelasList = [
-    'X PPLG 1', 'X PPLG 2',
-    'XI PPLG 1', 'XI PPLG 2',
-    'XII PPLG 1', 'XII PPLG 2',
-  ];
+  String _selectedKelas = AppStrings.kelasList.first;
 
   Future<void> _register() async {
-    if (_nisC.text.isEmpty || _nameC.text.isEmpty || _passwordC.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Semua field wajib diisi!')),
-      );
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
+    
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 600)); // Simulasi network
     if (!mounted) return;
 
-    final ok = Provider.of<AppProvider>(context, listen: false).register(
-      nis: _nisC.text.trim(),
-      name: _nameC.text.trim(),
+    final result = context.read<AuthProvider>().register(
+      nis: _nisC.text,
+      name: _nameC.text,
       kelas: _selectedKelas,
       password: _passwordC.text,
     );
+    
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (ok) {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
+    if (result is Success<UserModel>) {
+      context.go(AppRoutes.home);
+    } else if (result is Failure<UserModel>) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('NIS sudah terdaftar!'),
+        SnackBar(
+          content: Text(result.message),
           backgroundColor: AppTheme.error,
         ),
       );
@@ -69,13 +70,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   const Icon(Icons.terminal, size: 56, color: Colors.white),
                   const SizedBox(height: 8),
-                  Text('DevGuild',
+                  Text(AppStrings.appName,
                       style: Theme.of(context)
                           .textTheme
                           .displayMedium
                           ?.copyWith(color: Colors.white)),
                   const SizedBox(height: 4),
-                  Text('Buat akun baru',
+                  Text(AppStrings.createAccount,
                       style: Theme.of(context)
                           .textTheme
                           .bodyMedium
@@ -94,92 +95,116 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ],
                     ),
                     padding: const EdgeInsets.all(28),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text('Daftar',
-                            style: Theme.of(context).textTheme.titleLarge),
-                        const SizedBox(height: 24),
-                        TextField(
-                          controller: _nisC,
-                          decoration: const InputDecoration(
-                            labelText: 'NIS',
-                            prefixIcon: Icon(Icons.badge_outlined),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _nameC,
-                          decoration: const InputDecoration(
-                            labelText: 'Nama Lengkap',
-                            prefixIcon: Icon(Icons.person_outline),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedKelas,
-                          decoration: InputDecoration(
-                            labelText: 'Kelas',
-                            prefixIcon: const Icon(Icons.class_outlined),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                    color: Colors.grey.shade300)),
-                            enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                    color: Colors.grey.shade300)),
-                          ),
-                          items: _kelasList
-                              .map((k) =>
-                                  DropdownMenuItem(value: k, child: Text(k)))
-                              .toList(),
-                          onChanged: (v) =>
-                              setState(() => _selectedKelas = v!),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _passwordC,
-                          obscureText: _obscure,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscure
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined),
-                              onPressed: () =>
-                                  setState(() => _obscure = !_obscure),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(AppStrings.register,
+                              style: Theme.of(context).textTheme.titleLarge),
+                          const SizedBox(height: 24),
+                          TextFormField(
+                            controller: _nisC,
+                            validator: Validators.validateNIS,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: AppStrings.nisLabel,
+                              prefixIcon: Icon(Icons.badge_outlined),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 28),
-                        SizedBox(
-                          height: 52,
-                          child: _isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : ElevatedButton(
-                                  onPressed: _register,
-                                  child: const Text('Daftar Sekarang'),
-                                ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('Sudah punya akun? '),
-                            GestureDetector(
-                              onTap: () => Navigator.pop(context),
-                              child: const Text('Masuk',
-                                  style: TextStyle(
-                                      color: AppTheme.primary,
-                                      fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _nameC,
+                            validator: Validators.validateName,
+                            decoration: const InputDecoration(
+                              labelText: AppStrings.nameLabel,
+                              prefixIcon: Icon(Icons.person_outline),
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedKelas,
+                            decoration: InputDecoration(
+                              labelText: AppStrings.kelasLabel,
+                              prefixIcon: const Icon(Icons.class_outlined),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                      color: Colors.grey.shade300)),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                      color: Colors.grey.shade300)),
+                            ),
+                            items: AppStrings.kelasList
+                                .map((k) =>
+                                    DropdownMenuItem(value: k, child: Text(k)))
+                                .toList(),
+                            onChanged: (v) =>
+                                setState(() => _selectedKelas = v!),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _passwordC,
+                            obscureText: _obscurePassword,
+                            validator: Validators.validatePassword,
+                            decoration: InputDecoration(
+                              labelText: AppStrings.passwordLabel,
+                              prefixIcon: const Icon(Icons.lock_outline),
+                              suffixIcon: IconButton(
+                                icon: Icon(_obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined),
+                                onPressed: () =>
+                                    setState(() => _obscurePassword = !_obscurePassword),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _confirmPasswordC,
+                            obscureText: _obscureConfirm,
+                            validator: (v) => Validators.validateConfirmPassword(v, _passwordC.text),
+                            decoration: InputDecoration(
+                              labelText: AppStrings.confirmPasswordLabel,
+                              prefixIcon: const Icon(Icons.lock_clock_outlined),
+                              suffixIcon: IconButton(
+                                icon: Icon(_obscureConfirm
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined),
+                                onPressed: () =>
+                                    setState(() => _obscureConfirm = !_obscureConfirm),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+                          SizedBox(
+                            height: 52,
+                            child: _isLoading
+                                ? const Center(child: CircularProgressIndicator())
+                                : ElevatedButton(
+                                    onPressed: _register,
+                                    child: const Text(AppStrings.registerNow),
+                                  ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(AppStrings.hasAccount),
+                              GestureDetector(
+                                onTap: () => context.pop(), // Pop to go back to login
+                                child: const Text(AppStrings.login,
+                                    style: TextStyle(
+                                        color: AppTheme.primary,
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

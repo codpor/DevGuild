@@ -1,10 +1,14 @@
+// lib/data/mock_users.dart
+// Data mock pengguna dengan password yang sudah di-hash (SHA-256)
+
 import '../models/models.dart';
+import '../utils/password_hasher.dart';
 
 final List<UserModel> mockUsers = [
   UserModel(
     id: 'u1',
-    nis: 'admin',
-    password: 'admin',
+    nis: '9999',
+    password: PasswordHasher.hash('admin123'),
     name: 'Budi Santoso, S.Kom',
     kelas: 'Guru PPLG',
     role: 'Guru',
@@ -13,8 +17,8 @@ final List<UserModel> mockUsers = [
   ),
   UserModel(
     id: 'u2',
-    nis: 'mentor',
-    password: 'password123',
+    nis: '1001',
+    password: PasswordHasher.hash('password123'),
     name: 'Akun Mentor Demo',
     kelas: 'XII PPLG 1',
     role: 'Siswa',
@@ -41,7 +45,7 @@ final List<UserModel> mockUsers = [
   UserModel(
     id: 'u3',
     nis: '2201',
-    password: 'password123',
+    password: PasswordHasher.hash('password123'),
     name: 'Arif Fakhry',
     kelas: 'XII PPLG 1',
     role: 'Siswa',
@@ -54,7 +58,7 @@ final List<UserModel> mockUsers = [
   UserModel(
     id: 'u4',
     nis: '2202',
-    password: 'password123',
+    password: PasswordHasher.hash('password123'),
     name: 'Siti Rahayu',
     kelas: 'XI PPLG 2',
     role: 'Siswa',
@@ -66,8 +70,8 @@ final List<UserModel> mockUsers = [
   ),
   UserModel(
     id: 'u5',
-    nis: 'moderator',
-    password: 'password123',
+    nis: '1003',
+    password: PasswordHasher.hash('password123'),
     name: 'Akun Moderator Demo',
     kelas: 'XII PPLG 2',
     role: 'Siswa',
@@ -80,7 +84,7 @@ final List<UserModel> mockUsers = [
   UserModel(
     id: 'u6',
     nis: '2204',
-    password: 'password123',
+    password: PasswordHasher.hash('password123'),
     name: 'Nadia Kusuma',
     kelas: 'X PPLG 1',
     role: 'Siswa',

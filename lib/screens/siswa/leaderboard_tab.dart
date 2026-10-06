@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
 
@@ -9,8 +9,8 @@ class LeaderboardTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AppProvider>(context);
-    final board = provider.leaderboard;
+    final authProvider = Provider.of<AuthProvider>(context);
+    final board = authProvider.leaderboard;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Peringkat Mentor')),
@@ -44,7 +44,7 @@ class LeaderboardTab extends StatelessWidget {
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: board.length > 3 ? board.length - 3 : 0,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (context, index) => const Divider(height: 1),
               itemBuilder: (context, i) {
                 final user = board[i + 3];
                 final rank = i + 4;
