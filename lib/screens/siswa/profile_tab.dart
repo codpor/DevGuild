@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import '../../router/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/role_provider.dart';
 import '../../models/models.dart';
@@ -184,7 +186,7 @@ void _showLogoutDialog(BuildContext context, AuthProvider provider) {
           onPressed: () {
             Navigator.pop(ctx);
             provider.logout();
-            Navigator.pushReplacementNamed(context, '/login');
+            context.go(AppRoutes.login);
           },
           style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
           child: const Text('Ya, Keluar'),

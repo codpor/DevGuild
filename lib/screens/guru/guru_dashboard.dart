@@ -9,7 +9,9 @@ import '../../router/app_router.dart';
 import '../../theme.dart';
 
 class GuruDashboard extends StatelessWidget {
-  const GuruDashboard({super.key});
+  final ValueChanged<int> onTabSelected;
+
+  const GuruDashboard({super.key, required this.onTabSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +102,7 @@ class GuruDashboard extends StatelessWidget {
                   count: pendingKarya,
                   color: AppTheme.warning,
                   desc: 'Menunggu validasi',
-                  onTap: () => _navigateToTab(context, 2),
+                  onTap: () => onTabSelected(2),
                 ),
                 const SizedBox(width: 12),
                 _ActionCard(
@@ -109,7 +111,7 @@ class GuruDashboard extends StatelessWidget {
                   count: openTickets,
                   color: AppTheme.error,
                   desc: 'Belum ada jawaban',
-                  onTap: () => _navigateToTab(context, 3),
+                  onTap: () => onTabSelected(3),
                 ),
               ],
             ),
@@ -122,7 +124,7 @@ class GuruDashboard extends StatelessWidget {
                   count: roleProvider.pendingRoleRequests.length,
                   color: AppTheme.info,
                   desc: 'Menunggu persetujuan',
-                  onTap: () => _navigateToTab(context, 1),
+                  onTap: () => onTabSelected(1),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(child: SizedBox()),
@@ -169,29 +171,6 @@ class GuruDashboard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _navigateToTab(BuildContext context, int tabIndex) {
-    // Find the parent GuruHome state and switch tab
-    final scaffoldState = context.findAncestorStateOfType<State>();
-    if (scaffoldState != null && scaffoldState.mounted) {
-      // Use a callback to update the parent's tab index
-      try {
-        // ignore: avoid_dynamic_calls
-        (scaffoldState as dynamic).setState(() {
-          (scaffoldState as dynamic)._currentIndex = tabIndex;
-        });
-        } catch (_) {
-          // Fallback: show a snackbar guiding the user
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  'Navigasi ke tab ${['Dashboard', 'Siswa', 'Validasi', 'Monitoring', 'Klinik'][tabIndex]}'),
-              backgroundColor: AppTheme.primary,
-            ),
-          );
-      }
-    }
   }
 
   void _showLogoutDialog(BuildContext context, AuthProvider provider) {

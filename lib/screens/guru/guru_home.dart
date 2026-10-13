@@ -14,18 +14,20 @@ class GuruHome extends StatefulWidget {
 class _GuruHomeState extends State<GuruHome> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    GuruDashboard(),
-    GuruManajemen(),
-    GuruValidasi(),
-    GuruMonitoring(),
-    ClinicTab(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final pages = <Widget>[
+      GuruDashboard(
+        onTabSelected: (index) => setState(() => _currentIndex = index),
+      ),
+      const GuruManajemen(),
+      const GuruValidasi(),
+      const GuruMonitoring(),
+      const ClinicTab(),
+    ];
+
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(index: _currentIndex, children: pages),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),

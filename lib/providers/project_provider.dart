@@ -46,14 +46,15 @@ class ProjectProvider with ChangeNotifier {
 
   void validateProject(String projectId, bool approved,
       {String feedback = ''}) {
+    if (_authProvider.currentUser?.role != 'Guru') return;
     final project = _repo.getProjectById(projectId);
+    // Hanya karya pending yang boleh ditinjau; keputusan ulang tidak memberi poin.
+    if (project.isValidated || project.isRejected) return;
+    project.isValidated = approved;
+    project.isRejected = !approved;
+    project.guruFeedback = feedback.trim();
     if (approved) {
-      project.isValidated = true;
-      project.guruFeedback = feedback;
       _authProvider.addPoinToUser(project.authorId, poinProjectValidated);
-    } else {
-      project.isRejected = true;
-      project.guruFeedback = feedback;
     }
     notifyListeners();
   }
@@ -64,13 +65,19 @@ class ProjectProvider with ChangeNotifier {
 
     final project = _repo.getProjectById(projectId);
 
+    if (!project.isValidated || project.isRejected) return;
+
     if (user.likedProjects.contains(projectId)) {
       user.likedProjects.remove(projectId);
       project.likes -= 1;
+      // Poin mengikuti like aktif, sehingga unlike/like tidak menggandakan poin.
+      if (project.authorId != user.id) {
+        _authProvider.addPoinToUser(project.authorId, -poinProjectLiked);
+      }
     } else {
       user.likedProjects.add(projectId);
       project.likes += 1;
-      // Poin untuk author (hanya saat like, bukan unlike)
+      // Like karya sendiri tidak menghasilkan poin.
       if (project.authorId != user.id) {
         _authProvider.addPoinToUser(project.authorId, poinProjectLiked);
       }
