@@ -7,7 +7,28 @@ import '../data/mock_users.dart';
 import 'app_repository.dart';
 
 class MockRepository extends AppRepository {
-  final List<UserModel> _users = List.from(mockUsers);
+  // Setiap repository punya state user sendiri, termasuk list badge dan aktivitas.
+  final List<UserModel> _users = mockUsers
+      .map(
+        (user) => UserModel(
+          id: user.id,
+          nis: user.nis,
+          password: user.password,
+          name: user.name,
+          kelas: user.kelas,
+          role: user.role,
+          profilePhoto: user.profilePhoto,
+          isActive: user.isActive,
+          activeRole: user.activeRole,
+          poin: user.poin,
+          ticketsCreated: user.ticketsCreated,
+          ticketsAnswered: user.ticketsAnswered,
+          badges: user.badges,
+          activities: List.from(user.activities),
+          likedProjects: Set.from(user.likedProjects),
+        ),
+      )
+      .toList();
 
   final List<TicketModel> _tickets = [
     TicketModel(
@@ -16,8 +37,7 @@ class MockRepository extends AppRepository {
       authorName: 'Siti Rahayu',
       authorKelas: 'XI PPLG 2',
       title: 'Error koneksi database MySQL di PHP',
-      description:
-          'Saya sudah mencoba mengikuti tutorial tapi muncul error "Connection Refused". Saya menggunakan XAMPP dan sudah memastikan Apache & MySQL aktif.',
+      description: 'Saya sudah mencoba mengikuti tutorial tapi muncul error "Connection Refused". Saya menggunakan XAMPP dan sudah memastikan Apache & MySQL aktif.',
       errorCode: 'SQLSTATE[HY000] [2002] Connection refused',
       category: 'PHP & MySQL',
       status: TicketStatus.solved,
@@ -28,8 +48,7 @@ class MockRepository extends AppRepository {
           authorId: 'u3',
           authorName: 'Arif Fakhry',
           authorRole: UserRole.mentor,
-          content:
-              'Coba cek port MySQL-nya. Biasanya default 3306, tapi di beberapa konfigurasi XAMPP bisa berubah. Pastikan di file php.ini juga sudah benar.',
+          content: 'Coba cek port MySQL-nya. Biasanya default 3306, tapi di beberapa konfigurasi XAMPP bisa berubah. Pastikan di file php.ini juga sudah benar.',
           createdAt: DateTime.now().subtract(const Duration(hours: 2)),
           isAccepted: true,
         ),
@@ -41,8 +60,7 @@ class MockRepository extends AppRepository {
       authorName: 'Nadia Kusuma',
       authorKelas: 'X PPLG 1',
       title: 'Tampilan website tidak rapi di mobile',
-      description:
-          'Website yang saya buat menggunakan Bootstrap terlihat berantakan saat dibuka di HP. Padding dan margin-nya tidak sesuai.',
+      description: 'Website yang saya buat menggunakan Bootstrap terlihat berantakan saat dibuka di HP. Padding dan margin-nya tidak sesuai.',
       errorCode: '',
       category: 'HTML & CSS',
       status: TicketStatus.open,
@@ -55,8 +73,7 @@ class MockRepository extends AppRepository {
       authorName: 'Siti Rahayu',
       authorKelas: 'XI PPLG 2',
       title: 'Undefined variable di PHP',
-      description:
-          'Muncul notice "Undefined variable: nama" padahal sudah saya deklarasikan di atas.',
+      description: 'Muncul notice "Undefined variable: nama" padahal sudah saya deklarasikan di atas.',
       errorCode: 'Notice: Undefined variable: nama on line 14',
       category: 'PHP & MySQL',
       status: TicketStatus.inProgress,
@@ -67,8 +84,7 @@ class MockRepository extends AppRepository {
           authorId: 'u5',
           authorName: 'Akun Moderator Demo',
           authorRole: UserRole.moderator,
-          content:
-              'Coba cek scope variabelnya. Apakah kamu mendefinisikannya di dalam if atau function? Variabel di dalam block tidak bisa diakses di luar.',
+          content: 'Coba cek scope variabelnya. Apakah kamu mendefinisikannya di dalam if atau function? Variabel di dalam block tidak bisa diakses di luar.',
           createdAt: DateTime.now().subtract(const Duration(minutes: 20)),
         ),
       ],
@@ -79,8 +95,7 @@ class MockRepository extends AppRepository {
       authorName: 'Nadia Kusuma',
       authorKelas: 'X PPLG 1',
       title: 'Cara membuat form login yang aman',
-      description:
-          'Saya ingin membuat form login untuk tugas prakerin, bagaimana cara membuat yang aman dari SQL Injection?',
+      description: 'Saya ingin membuat form login untuk tugas prakerin, bagaimana cara membuat yang aman dari SQL Injection?',
       errorCode: '',
       category: 'Keamanan Web',
       status: TicketStatus.open,
@@ -96,8 +111,7 @@ class MockRepository extends AppRepository {
       authorName: 'Arif Fakhry',
       authorKelas: 'XII PPLG 1',
       title: 'Aplikasi Kasir Sederhana',
-      description:
-          'Aplikasi kasir berbasis web dengan fitur CRUD produk, transaksi, dan laporan penjualan menggunakan PHP & MySQL.',
+      description: 'Aplikasi kasir berbasis web dengan fitur CRUD produk, transaksi, dan laporan penjualan menggunakan PHP & MySQL.',
       category: 'Web App',
       linkAkses: 'https://kasir-demo.vercel.app',
       linkGithub: 'https://github.com/ariffakhry/kasir-app',
@@ -113,8 +127,7 @@ class MockRepository extends AppRepository {
       authorName: 'Akun Moderator Demo',
       authorKelas: 'XII PPLG 2',
       title: 'Sistem Absensi QR Code',
-      description:
-          'Aplikasi absensi menggunakan QR Code berbasis Python dan Flask dengan database SQLite.',
+      description: 'Aplikasi absensi menggunakan QR Code berbasis Python dan Flask dengan database SQLite.',
       category: 'Python',
       linkAkses: 'https://absensi-qr.herokuapp.com',
       linkGithub: 'https://github.com/dimaspratama/absensi-qr',
@@ -130,8 +143,7 @@ class MockRepository extends AppRepository {
       authorName: 'Siti Rahayu',
       authorKelas: 'XI PPLG 2',
       title: 'Website Portofolio Personal',
-      description:
-          'Website portofolio menggunakan HTML, CSS, dan JavaScript dengan animasi scroll yang smooth.',
+      description: 'Website portofolio menggunakan HTML, CSS, dan JavaScript dengan animasi scroll yang smooth.',
       category: 'Web',
       linkAkses: 'https://sitirahayu.github.io',
       linkGithub: 'https://github.com/sitirahayu/portfolio',
@@ -147,8 +159,7 @@ class MockRepository extends AppRepository {
       authorName: 'Nadia Kusuma',
       authorKelas: 'X PPLG 1',
       title: 'Kalkulator Sederhana',
-      description:
-          'Kalkulator web dengan tampilan modern menggunakan HTML, CSS, dan JavaScript.',
+      description: 'Kalkulator web dengan tampilan modern menggunakan HTML, CSS, dan JavaScript.',
       category: 'JavaScript',
       linkGithub: 'https://github.com/nadiakusuma/kalkulator',
       teamMembers: ['Nadia Kusuma'],
@@ -218,8 +229,7 @@ class MockRepository extends AppRepository {
       _roleRequests.firstWhere((r) => r.id == requestId);
 
   @override
-  void addRoleRequest(RoleRequestModel request) =>
-      _roleRequests.add(request);
+  void addRoleRequest(RoleRequestModel request) => _roleRequests.add(request);
 
   // ────────────── Leaderboard ──────────────
 

@@ -8,6 +8,7 @@ import '../../providers/role_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
 import 'profile_photo_screen.dart';
+import 'achievements_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key});
@@ -167,6 +168,20 @@ class ProfileTab extends StatelessWidget {
                               .toList(),
                         ),
                   const SizedBox(height: 20),
+
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => const AchievementsScreen(),
+                        ),
+                      ),
+                      icon: const Icon(Icons.military_tech_outlined),
+                      label: const Text('Lihat Syarat & Progres Badge'),
+                    ),
+                  ),
 
                   // ── Activity
                   const Text(

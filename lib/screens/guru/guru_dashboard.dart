@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../providers/auth_provider.dart';
 import '../../providers/ticket_provider.dart';
 import '../../providers/project_provider.dart';
@@ -19,9 +20,11 @@ class GuruDashboard extends StatelessWidget {
     final ticketProvider = Provider.of<TicketProvider>(context);
     final projectProvider = Provider.of<ProjectProvider>(context);
     final roleProvider = Provider.of<RoleProvider>(context);
-    
+
     final user = authProvider.currentUser!;
-    final totalSiswa = authProvider.allUsers.length;
+    final totalSiswa = authProvider.allUsers
+        .where((user) => user.isActive)
+        .length;
     final openTickets = ticketProvider.openTickets.length;
     final pendingKarya = projectProvider.pendingProjects.length;
     final totalKarya = projectProvider.allProjects.length;
@@ -31,10 +34,14 @@ class GuruDashboard extends StatelessWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Halo, ${user.name.split(',').first}! 👋',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const Text('Admin Dashboard',
-                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(
+              'Halo, ${user.name.split(',').first}! 👋',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const Text(
+              'Admin Dashboard',
+              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            ),
           ],
         ),
         actions: [
@@ -64,24 +71,32 @@ class GuruDashboard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Ringkasan Ekosistem',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Ringkasan Ekosistem',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('SMK PPLG · ${DateTime.now().year}',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.75),
-                          fontSize: 12)),
+                  Text(
+                    'SMK PPLG · ${DateTime.now().year}',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.75),
+                      fontSize: 12,
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   Row(
                     children: [
                       _BannerStat(value: '$totalSiswa', label: 'Siswa Aktif'),
                       _BannerStat(value: '$totalKarya', label: 'Karya Total'),
                       _BannerStat(
-                          value: '${authProvider.leaderboard.isNotEmpty ? authProvider.leaderboard.first.poin : 0}',
-                          label: 'Poin Tertinggi'),
+                        value:
+                            '${authProvider.leaderboard.isNotEmpty ? authProvider.leaderboard.first.poin : 0}',
+                        label: 'Poin Tertinggi',
+                      ),
                     ],
                   ),
                 ],
@@ -90,9 +105,10 @@ class GuruDashboard extends StatelessWidget {
             const SizedBox(height: 20),
 
             // ── Action cards
-            const Text('Perlu Tindakan',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text(
+              'Perlu Tindakan',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -133,16 +149,14 @@ class GuruDashboard extends StatelessWidget {
             const SizedBox(height: 20),
 
             // ── Top Mentor
-            const Text('Top Mentor',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text(
+              'Top Mentor',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 12),
-            ...authProvider.leaderboard
-                .take(5)
-                .toList()
-                .asMap()
-                .entries
-                .map((e) {
+            ...authProvider.leaderboard.take(5).toList().asMap().entries.map((
+              e,
+            ) {
               final rank = e.key + 1;
               final u = e.value;
               return Card(
@@ -152,18 +166,24 @@ class GuruDashboard extends StatelessWidget {
                     backgroundColor: rank <= 3
                         ? AppTheme.primary.withValues(alpha: 0.15)
                         : Colors.grey.shade200,
-                    child: Text(['🥇', '🥈', '🥉', '4', '5'][rank - 1],
-                        style: const TextStyle(fontSize: 16)),
+                    child: Text(
+                      ['🥇', '🥈', '🥉', '4', '5'][rank - 1],
+                      style: const TextStyle(fontSize: 16),
+                    ),
                   ),
-                  title: Text(u.name,
-                      style:
-                          const TextStyle(fontWeight: FontWeight.w600)),
+                  title: Text(
+                    u.name,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   subtitle: Text(u.kelas),
-                  trailing: Text('${u.poin} pts',
-                      style: const TextStyle(
-                          color: AppTheme.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14)),
+                  trailing: Text(
+                    '${u.poin} pts',
+                    style: const TextStyle(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
               );
             }),
@@ -215,15 +235,22 @@ class _BannerStat extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Text(value,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold)),
-          Text(label,
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.75), fontSize: 11),
-              textAlign: TextAlign.center),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.75),
+              fontSize: 11,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -266,17 +293,28 @@ class _ActionCard extends StatelessWidget {
                   child: Icon(icon, color: color, size: 24),
                 ),
                 const SizedBox(height: 12),
-                Text('$count',
-                    style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: color)),
-                Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 13)),
-                Text(desc,
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 11)),
+                Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  desc,
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
               ],
             ),
           ),

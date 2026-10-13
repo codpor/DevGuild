@@ -7,6 +7,7 @@ import '../../providers/ticket_provider.dart';
 import '../../widgets/project_status_badge.dart';
 import '../siswa/clinic_tab.dart';
 import '../siswa/showcase_tab.dart';
+import 'student_account_dialogs.dart';
 
 class StudentDetailScreen extends StatelessWidget {
   final String studentId;
@@ -66,6 +67,30 @@ class StudentDetailScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text('NIS: ${student.nis}'),
           Text('Kelas: ${student.kelas}'),
+          Text(
+            student.isActive ? 'Status Akun: Aktif' : 'Status Akun: Nonaktif',
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton(
+                onPressed: () => showStudentPasswordReset(context, student),
+                child: const Text('Reset Password'),
+              ),
+              OutlinedButton(
+                onPressed: () => showStudentStatusConfirmation(
+                  context,
+                  student,
+                  !student.isActive,
+                ),
+                child: Text(
+                  student.isActive ? 'Nonaktifkan Akun' : 'Aktifkan Akun',
+                ),
+              ),
+            ],
+          ),
           Text('Peran aktif: ${role[0].toUpperCase()}${role.substring(1)}'),
           const SizedBox(height: 20),
           const _SectionTitle('Statistik Kontribusi'),

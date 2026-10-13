@@ -6,6 +6,7 @@ import '../../providers/role_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
 import 'student_detail_screen.dart';
+import 'student_account_dialogs.dart';
 
 class GuruManajemen extends StatefulWidget {
   const GuruManajemen({super.key});
@@ -174,6 +175,14 @@ class _SiswaListTab extends StatelessWidget {
                               children: [
                                 _ActiveRoleChip(user.activeRole),
                                 Text(
+                                  user.isActive ? 'Aktif' : 'Nonaktif',
+                                  style: TextStyle(
+                                    color: user.isActive
+                                        ? AppTheme.success
+                                        : AppTheme.error,
+                                  ),
+                                ),
+                                Text(
                                   '${user.poin} poin',
                                   style: const TextStyle(
                                     color: AppTheme.primary,
@@ -202,9 +211,13 @@ class _SiswaListTab extends StatelessWidget {
                             );
                             return;
                           }
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('$val untuk ${user.name}')),
-                          );
+                          if (val == 'Reset Password') {
+                            showStudentPasswordReset(context, user);
+                          } else if (val == 'Nonaktifkan Akun') {
+                            showStudentStatusConfirmation(context, user, false);
+                          } else if (val == 'Aktifkan Akun') {
+                            showStudentStatusConfirmation(context, user, true);
+                          }
                         },
                         itemBuilder: (_) => [
                           const PopupMenuItem(
@@ -215,11 +228,19 @@ class _SiswaListTab extends StatelessWidget {
                             value: 'Reset Password',
                             child: Text('Reset Password'),
                           ),
-                          const PopupMenuItem(
-                            value: 'Nonaktifkan Akun',
+                          PopupMenuItem(
+                            value: user.isActive
+                                ? 'Nonaktifkan Akun'
+                                : 'Aktifkan Akun',
                             child: Text(
-                              'Nonaktifkan Akun',
-                              style: TextStyle(color: AppTheme.error),
+                              user.isActive
+                                  ? 'Nonaktifkan Akun'
+                                  : 'Aktifkan Akun',
+                              style: TextStyle(
+                                color: user.isActive
+                                    ? AppTheme.error
+                                    : AppTheme.success,
+                              ),
                             ),
                           ),
                         ],

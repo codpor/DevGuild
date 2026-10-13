@@ -164,6 +164,17 @@ void main() {
     expect(find.text('NIS: 2202'), findsOneWidget);
     expect(find.text('Kelas: XI PPLG 2'), findsOneWidget);
     expect(find.text('Statistik Kontribusi'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Website Portofolio Personal'),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(StudentDetailScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Website Portofolio Personal'), findsOneWidget);
     expect(find.text('Aplikasi Kasir Sederhana'), findsNothing);
     expect(tester.takeException(), isNull);

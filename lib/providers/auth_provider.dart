@@ -9,6 +9,8 @@ import '../repositories/app_repository.dart';
 import '../utils/password_hasher.dart';
 import '../utils/result.dart';
 import '../constants/app_strings.dart';
+import '../services/badge_service.dart';
+import '../utils/validators.dart';
 
 class AuthProvider with ChangeNotifier {
   final AppRepository _repo;
@@ -17,7 +19,9 @@ class AuthProvider with ChangeNotifier {
 
   // ────────────── State ──────────────
   UserModel? _currentUser;
-  UserModel? get currentUser => _currentUser;
+  UserModel? get currentUser =>
+      _currentUser?.isActive == true ? _currentUser : null;
+  bool get canManageStudents => currentUser?.role == 'Guru';
 
   // ────────────── User Queries ──────────────
   List<UserModel> get allUsers => _repo.getAllSiswa();
@@ -44,7 +48,14 @@ class AuthProvider with ChangeNotifier {
       return const Failure('Password salah', code: 'WRONG_PASSWORD');
     }
 
+    if (!user.isActive) {
+      return const Failure(
+        'Akun nonaktif. Hubungi guru untuk mengaktifkan kembali.',
+        code: 'ACCOUNT_INACTIVE',
+      );
+    }
     _currentUser = user;
+    _awardBadges(user);
     notifyListeners();
     return Success(user);
   }
@@ -85,7 +96,7 @@ class AuthProvider with ChangeNotifier {
     LocalImage? photo, {
     required String userId,
   }) {
-    final user = _currentUser;
+    final user = currentUser;
     if (user == null || user.id != userId) {
       return const Failure(
         'Foto hanya dapat diubah oleh pemilik akun yang sedang masuk.',
@@ -96,11 +107,74 @@ class AuthProvider with ChangeNotifier {
     return Success(user);
   }
 
+  Result<UserModel> resetStudentPassword(String userId, String newPassword) {
+    if (!canManageStudents) {
+      return const Failure(
+        'Hanya guru aktif yang dapat mereset password.',
+        code: 'FORBIDDEN',
+      );
+    }
+    final user = _repo.getUserById(userId);
+    if (user == null || user.role != 'Siswa') {
+      return const Failure(
+        'Akun siswa tidak ditemukan.',
+        code: 'STUDENT_NOT_FOUND',
+      );
+    }
+    final error = Validators.validatePassword(newPassword);
+    if (newPassword.trim().isEmpty || error != null) {
+      return Failure(
+        error ?? 'Password tidak boleh hanya berisi spasi.',
+        code: 'INVALID_PASSWORD',
+      );
+    }
+    user.password = PasswordHasher.hash(newPassword);
+    _recordAccountAction(user, 'Password Direset');
+    notifyListeners();
+    return Success(user);
+  }
+
+  Result<UserModel> setStudentActive(String userId, bool active) {
+    if (!canManageStudents) {
+      return const Failure(
+        'Hanya guru aktif yang dapat mengubah status akun.',
+        code: 'FORBIDDEN',
+      );
+    }
+    final user = _repo.getUserById(userId);
+    if (user == null || user.role != 'Siswa') {
+      return const Failure(
+        'Akun siswa tidak ditemukan.',
+        code: 'STUDENT_NOT_FOUND',
+      );
+    }
+    if (user.isActive == active) return Success(user);
+    user.isActive = active;
+    _recordAccountAction(
+      user,
+      active ? 'Akun Diaktifkan' : 'Akun Dinonaktifkan',
+    );
+    notifyListeners();
+    return Success(user);
+  }
+
+  void _recordAccountAction(UserModel student, String title) {
+    student.activities.insert(
+      0,
+      ActivityItem(
+        title: title,
+        description: 'Oleh guru: ${currentUser!.name}',
+        time: DateTime.now(),
+        icon: 'account',
+      ),
+    );
+  }
+
   // ────────────── Authorization Checks ──────────────
 
   /// Cek apakah user bisa membalas tiket (Guru/Mentor/Moderator)
   bool canReplyToTicket() {
-    if (_currentUser == null) return false;
+    if (currentUser == null) return false;
     if (_currentUser!.role == 'Guru') return true;
     return _currentUser!.activeRole == UserRole.mentor ||
         _currentUser!.activeRole == UserRole.moderator;
@@ -108,17 +182,33 @@ class AuthProvider with ChangeNotifier {
 
   /// Cek apakah user bisa moderasi tiket (Guru/Moderator)
   bool canModerateTicket() {
-    if (_currentUser == null) return false;
+    if (currentUser == null) return false;
     if (_currentUser!.role == 'Guru') return true;
     return _currentUser!.activeRole == UserRole.moderator;
+  }
+
+  List<BadgeProgress> get achievementProgress {
+    final user = currentUser;
+    return user == null
+        ? []
+        : BadgeService.progress(
+            user,
+            _repo.getAllTickets(),
+            _repo.getAllProjects(),
+          );
+  }
+
+  void _awardBadges(UserModel user) {
+    BadgeService.award(user, _repo.getAllTickets(), _repo.getAllProjects());
   }
 
   // ────────────── User Updates ──────────────
   // Dipanggil oleh provider lain untuk cross-domain updates
 
   void addPoin(int amount) {
-    if (_currentUser != null) {
+    if (currentUser != null) {
       _currentUser!.poin += amount;
+      _awardBadges(_currentUser!);
       notifyListeners();
     }
   }
@@ -127,26 +217,27 @@ class AuthProvider with ChangeNotifier {
     final user = _repo.getUserById(userId);
     if (user != null) {
       user.poin += amount;
+      _awardBadges(user);
       notifyListeners();
     }
   }
 
   void incrementTicketsCreated() {
-    if (_currentUser != null) {
+    if (currentUser != null) {
       _currentUser!.ticketsCreated += 1;
       notifyListeners();
     }
   }
 
   void incrementTicketsAnswered() {
-    if (_currentUser != null) {
+    if (currentUser != null) {
       _currentUser!.ticketsAnswered += 1;
       notifyListeners();
     }
   }
 
   void addActivity(ActivityItem activity) {
-    if (_currentUser != null) {
+    if (currentUser != null) {
       _currentUser!.activities.insert(0, activity);
       notifyListeners();
     }

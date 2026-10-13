@@ -12,7 +12,8 @@ enum RoleRequestStatus { pending, approved, rejected }
 class UserModel {
   final String id;
   final String nis;
-  final String password;
+  String password;
+  bool isActive;
   final String name;
   final String kelas;
   final String role; // 'Siswa' or 'Guru'
@@ -33,14 +34,16 @@ class UserModel {
     required this.kelas,
     required this.role,
     this.profilePhoto,
+    this.isActive = true,
     this.activeRole = UserRole.mentee,
     this.poin = 0,
     this.ticketsCreated = 0,
     this.ticketsAnswered = 0,
-    this.badges = const [],
+    List<String> badges = const [],
     List<ActivityItem>? activities,
     Set<String>? likedProjects,
-  }) : activities = activities ?? [],
+  }) : badges = List<String>.from(badges),
+       activities = activities ?? [],
        likedProjects = likedProjects ?? {};
 }
 
