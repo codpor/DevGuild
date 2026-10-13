@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'showcase_tab.dart';
+import 'my_projects_tab.dart';
 import 'clinic_tab.dart';
 import 'leaderboard_tab.dart';
 import 'profile_tab.dart';
@@ -15,6 +17,7 @@ class _SiswaHomeState extends State<SiswaHome> {
 
   final List<Widget> _pages = const [
     ShowcaseTab(),
+    MyProjectsTab(),
     ClinicTab(),
     LeaderboardTab(),
     ProfileTab(),
@@ -29,13 +32,25 @@ class _SiswaHomeState extends State<SiswaHome> {
         onTap: (i) => setState(() => _currentIndex = i),
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_rounded), label: 'Showcase'),
+            icon: Icon(Icons.grid_view_rounded),
+            label: 'Showcase',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.bug_report_outlined), label: 'Klinik'),
+            icon: Icon(Icons.folder_open_outlined),
+            label: 'Karya Saya',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.leaderboard_outlined), label: 'Peringkat'),
+            icon: Icon(Icons.bug_report_outlined),
+            label: 'Klinik',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline), label: 'Profil'),
+            icon: Icon(Icons.leaderboard_outlined),
+            label: 'Peringkat',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profil',
+          ),
         ],
       ),
     );

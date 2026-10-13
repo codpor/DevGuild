@@ -46,4 +46,18 @@ class Validators {
     }
     return null;
   }
+
+  static String? validateOptionalUrl(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return null;
+    final uri = Uri.tryParse(text);
+    if (uri == null ||
+        (uri.scheme != 'http' && uri.scheme != 'https') ||
+        uri.host.isEmpty ||
+        uri.userInfo.isNotEmpty ||
+        RegExp(r'\s').hasMatch(text)) {
+      return 'Masukkan URL http:// atau https:// yang valid';
+    }
+    return null;
+  }
 }

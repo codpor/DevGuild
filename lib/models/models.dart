@@ -2,7 +2,9 @@
 // Semua model data untuk DevGuild
 
 enum UserRole { mentee, mentor, moderator }
+
 enum TicketStatus { open, inProgress, solved }
+
 enum RoleRequestStatus { pending, approved, rejected }
 
 class UserModel {
@@ -105,13 +107,13 @@ class ProjectModel {
   final String authorId;
   final String authorName;
   final String authorKelas;
-  final String title;
-  final String description;
-  final String category;
-  final String linkAkses;
-  final String linkGithub;
-  final List<String> teamMembers;
-  final List<String> teknologi;
+  String title;
+  String description;
+  String category;
+  String linkAkses;
+  String linkGithub;
+  List<String> teamMembers;
+  List<String> teknologi;
   bool isValidated;
   bool isRejected;
   String guruFeedback;

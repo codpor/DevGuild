@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../providers/auth_provider.dart';
 import '../../providers/role_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
+import 'student_detail_screen.dart';
 
 class GuruManajemen extends StatefulWidget {
   const GuruManajemen({super.key});
@@ -45,7 +47,13 @@ class _GuruManajemenState extends State<GuruManajemen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Permohonan Role'),
+                  const Flexible(
+                    child: Text(
+                      'Permohonan Role',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                   if (pendingRequests.isNotEmpty) ...[
                     const SizedBox(width: 6),
                     Container(
@@ -54,11 +62,14 @@ class _GuruManajemenState extends State<GuruManajemen>
                         color: AppTheme.accent,
                         shape: BoxShape.circle,
                       ),
-                      child: Text('${pendingRequests.length}',
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold)),
+                      child: Text(
+                        '${pendingRequests.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ],
@@ -102,9 +113,13 @@ class _SiswaListTab extends StatelessWidget {
             children: [
               const Icon(Icons.group, size: 18, color: AppTheme.primary),
               const SizedBox(width: 8),
-              Text('Total ${users.length} Siswa Terdaftar',
-                  style: const TextStyle(
-                      color: AppTheme.primary, fontWeight: FontWeight.w600)),
+              Text(
+                'Total ${users.length} Siswa Terdaftar',
+                style: const TextStyle(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),
@@ -121,64 +136,92 @@ class _SiswaListTab extends StatelessWidget {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor:
-                            AppTheme.primary.withValues(alpha: 0.15),
-                        child: Text(user.name[0],
-                            style: const TextStyle(
-                                color: AppTheme.primary,
-                                fontWeight: FontWeight.bold)),
+                        backgroundColor: AppTheme.primary.withValues(
+                          alpha: 0.15,
+                        ),
+                        child: Text(
+                          user.name[0],
+                          style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(user.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14)),
                             Text(
-                                'NIS: ${user.nis}  ·  ${user.kelas}',
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 12)),
+                              user.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              'NIS: ${user.nis}  ·  ${user.kelas}',
+                              style: const TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            Row(
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 _ActiveRoleChip(user.activeRole),
-                                const SizedBox(width: 6),
-                                Text('${user.poin} poin',
-                                    style: const TextStyle(
-                                        color: AppTheme.primary,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold)),
+                                Text(
+                                  '${user.poin} poin',
+                                  style: const TextStyle(
+                                    color: AppTheme.primary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
                         ),
                       ),
                       PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert,
-                            color: AppTheme.textSecondary),
+                        icon: const Icon(
+                          Icons.more_vert,
+                          color: AppTheme.textSecondary,
+                        ),
                         onSelected: (val) {
+                          if (val == 'Lihat Detail') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (_) =>
+                                    StudentDetailScreen(studentId: user.id),
+                              ),
+                            );
+                            return;
+                          }
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text(
-                                    '$val untuk ${user.name}')),
+                            SnackBar(content: Text('$val untuk ${user.name}')),
                           );
                         },
                         itemBuilder: (_) => [
                           const PopupMenuItem(
-                              value: 'Lihat Detail',
-                              child: Text('Lihat Detail')),
+                            value: 'Lihat Detail',
+                            child: Text('Lihat Detail'),
+                          ),
                           const PopupMenuItem(
-                              value: 'Reset Password',
-                              child: Text('Reset Password')),
+                            value: 'Reset Password',
+                            child: Text('Reset Password'),
+                          ),
                           const PopupMenuItem(
-                              value: 'Nonaktifkan Akun',
-                              child: Text('Nonaktifkan Akun',
-                                  style: TextStyle(
-                                      color: AppTheme.error))),
+                            value: 'Nonaktifkan Akun',
+                            child: Text(
+                              'Nonaktifkan Akun',
+                              style: TextStyle(color: AppTheme.error),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -219,19 +262,27 @@ class _RoleRequestsTab extends StatelessWidget {
                 padding: const EdgeInsets.all(40),
                 child: Column(
                   children: [
-                    Icon(Icons.check_circle_outline,
-                        size: 64, color: Colors.grey.shade400),
+                    Icon(
+                      Icons.check_circle_outline,
+                      size: 64,
+                      color: Colors.grey.shade400,
+                    ),
                     const SizedBox(height: 16),
-                    const Text('Tidak ada permohonan role baru',
-                        style: TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 15)),
+                    const Text(
+                      'Tidak ada permohonan role baru',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 15,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
 
           ...pending.map(
-              (req) => _RoleRequestCard(request: req, roleProvider: roleProvider)),
+            (req) => _RoleRequestCard(request: req, roleProvider: roleProvider),
+          ),
 
           // ── History
           if (history.isNotEmpty) ...[
@@ -242,13 +293,15 @@ class _RoleRequestsTab extends StatelessWidget {
                   width: 4,
                   height: 18,
                   decoration: BoxDecoration(
-                      color: AppTheme.textSecondary,
-                      borderRadius: BorderRadius.circular(2)),
+                    color: AppTheme.textSecondary,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
                 const SizedBox(width: 8),
-                const Text('Riwayat',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 15)),
+                const Text(
+                  'Riwayat',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -263,8 +316,7 @@ class _RoleRequestsTab extends StatelessWidget {
 class _RoleRequestCard extends StatelessWidget {
   final RoleRequestModel request;
   final RoleProvider roleProvider;
-  const _RoleRequestCard(
-      {required this.request, required this.roleProvider});
+  const _RoleRequestCard({required this.request, required this.roleProvider});
 
   @override
   Widget build(BuildContext context) {
@@ -283,21 +335,30 @@ class _RoleRequestCard extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppTheme.warning.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text('⏳ Menunggu Persetujuan',
-                      style: TextStyle(
-                          color: AppTheme.warning,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold)),
+                  child: Text(
+                    '⏳ Menunggu Persetujuan',
+                    style: TextStyle(
+                      color: AppTheme.warning,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 const Spacer(),
-                Text(_timeAgo(request.createdAt),
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 11)),
+                Text(
+                  _timeAgo(request.createdAt),
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 14),
@@ -306,22 +367,33 @@ class _RoleRequestCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 22,
                   backgroundColor: AppTheme.primary.withValues(alpha: 0.15),
-                  child: Text(request.userName[0],
-                      style: const TextStyle(
-                          color: AppTheme.primary,
-                          fontWeight: FontWeight.bold)),
+                  child: Text(
+                    request.userName[0],
+                    style: const TextStyle(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(request.userName,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 15)),
-                      Text('${request.userKelas} · Ingin menjadi $roleEmoji $roleLabel',
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 12)),
+                      Text(
+                        request.userName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        '${request.userKelas} · Ingin menjadi $roleEmoji $roleLabel',
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -338,14 +410,15 @@ class _RoleRequestCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
+                  _QualStat(label: 'Poin', value: '${request.userPoin}'),
                   _QualStat(
-                      label: 'Poin', value: '${request.userPoin}'),
+                    label: 'Karya',
+                    value: '${request.userProjectCount}',
+                  ),
                   _QualStat(
-                      label: 'Karya',
-                      value: '${request.userProjectCount}'),
-                  _QualStat(
-                      label: 'Dijawab',
-                      value: '${request.userTicketsAnswered}'),
+                    label: 'Dijawab',
+                    value: '${request.userTicketsAnswered}',
+                  ),
                 ],
               ),
             ),
@@ -354,14 +427,19 @@ class _RoleRequestCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () =>
-                        _showRejectDialog(context, request.id),
-                    icon: const Icon(Icons.close,
-                        color: AppTheme.error, size: 18),
-                    label: const Text('Tolak',
-                        style: TextStyle(color: AppTheme.error)),
+                    onPressed: () => _showRejectDialog(context, request.id),
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppTheme.error,
+                      size: 18,
+                    ),
+                    label: const Text(
+                      'Tolak',
+                      style: TextStyle(color: AppTheme.error),
+                    ),
                     style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppTheme.error)),
+                      side: const BorderSide(color: AppTheme.error),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -372,7 +450,8 @@ class _RoleRequestCard extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                              '${request.userName} disetujui sebagai $roleLabel!'),
+                            '${request.userName} disetujui sebagai $roleLabel!',
+                          ),
                           backgroundColor: AppTheme.success,
                         ),
                       );
@@ -380,7 +459,8 @@ class _RoleRequestCard extends StatelessWidget {
                     icon: const Icon(Icons.check, size: 18),
                     label: const Text('Setujui'),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.success),
+                      backgroundColor: AppTheme.success,
+                    ),
                   ),
                 ),
               ],
@@ -413,8 +493,7 @@ class _RoleRequestCard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              roleProvider.rejectRoleRequest(
-                  requestId, feedbackC.text.trim());
+              roleProvider.rejectRoleRequest(requestId, feedbackC.text.trim());
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -423,8 +502,7 @@ class _RoleRequestCard extends StatelessWidget {
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.error),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
             child: const Text('Tolak'),
           ),
         ],
@@ -448,14 +526,18 @@ class _QualStat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: AppTheme.primary)),
-        Text(label,
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 11)),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: AppTheme.primary,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+        ),
       ],
     );
   }
@@ -468,13 +550,13 @@ class _RoleRequestHistoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isApproved = request.status == RoleRequestStatus.approved;
-    final roleLabel =
-        request.requestedRole == UserRole.mentor ? 'Mentor' : 'Moderator';
+    final roleLabel = request.requestedRole == UserRole.mentor
+        ? 'Mentor'
+        : 'Moderator';
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         leading: CircleAvatar(
           backgroundColor: (isApproved ? AppTheme.success : AppTheme.error)
               .withValues(alpha: 0.12),
@@ -484,11 +566,14 @@ class _RoleRequestHistoryTile extends StatelessWidget {
             size: 20,
           ),
         ),
-        title: Text(request.userName,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+        title: Text(
+          request.userName,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        ),
         subtitle: Text(
-            '${isApproved ? "Disetujui" : "Ditolak"} sebagai $roleLabel',
-            style: const TextStyle(fontSize: 12)),
+          '${isApproved ? "Disetujui" : "Ditolak"} sebagai $roleLabel',
+          style: const TextStyle(fontSize: 12),
+        ),
         trailing: Text(
           isApproved ? '✅' : '❌',
           style: const TextStyle(fontSize: 18),
@@ -526,9 +611,14 @@ class _ActiveRoleChip extends StatelessWidget {
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(label,
-          style: TextStyle(
-              color: color, fontSize: 11, fontWeight: FontWeight.bold)),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }
