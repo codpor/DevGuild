@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../router/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/role_provider.dart';
 import '../../models/models.dart';
 import '../../theme.dart';
+import 'profile_photo_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key});
@@ -26,47 +28,82 @@ class ProfileTab extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: const BoxDecoration(
-                    gradient: AppTheme.primaryGradient),
+                  gradient: AppTheme.primaryGradient,
+                ),
                 child: SafeArea(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 44,
-                            backgroundColor:
-                                Colors.white.withValues(alpha: 0.3),
-                            child: Text(user.name[0],
-                                style: const TextStyle(
-                                    fontSize: 36,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold)),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                  color: AppTheme.secondary,
-                                  shape: BoxShape.circle),
-                              child: const Icon(Icons.camera_alt,
-                                  size: 14, color: Colors.white),
+                      Semantics(
+                        button: true,
+                        label: 'Ubah foto profil',
+                        child: GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (_) => ProfilePhotoScreen(
+                                userId: user.id,
+                                initialPhoto: user.profilePhoto,
+                              ),
                             ),
                           ),
-                        ],
+                          child: Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 44,
+                                backgroundColor: Colors.white.withValues(
+                                  alpha: 0.3,
+                                ),
+                                backgroundImage: user.profilePhoto == null
+                                    ? null
+                                    : MemoryImage(user.profilePhoto!.bytes),
+                                child: user.profilePhoto == null
+                                    ? Text(
+                                        user.name.isEmpty ? '?' : user.name[0],
+                                        style: const TextStyle(
+                                          fontSize: 36,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.secondary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 10),
-                      Text(user.name,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold)),
-                      Text(user.kelas,
-                          style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 13)),
+                      Text(
+                        user.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        user.kelas,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -88,34 +125,40 @@ class ProfileTab extends StatelessWidget {
                   Row(
                     children: [
                       _StatCard(
-                          icon: Icons.confirmation_number_outlined,
-                          value: '${user.ticketsCreated}',
-                          label: 'Tiket\nDibuat',
-                          color: AppTheme.info),
+                        icon: Icons.confirmation_number_outlined,
+                        value: '${user.ticketsCreated}',
+                        label: 'Tiket\nDibuat',
+                        color: AppTheme.info,
+                      ),
                       const SizedBox(width: 12),
                       _StatCard(
-                          icon: Icons.chat_bubble_outline,
-                          value: '${user.ticketsAnswered}',
-                          label: 'Tiket\nDijawab',
-                          color: AppTheme.success),
+                        icon: Icons.chat_bubble_outline,
+                        value: '${user.ticketsAnswered}',
+                        label: 'Tiket\nDijawab',
+                        color: AppTheme.success,
+                      ),
                       const SizedBox(width: 12),
                       _StatCard(
-                          icon: Icons.star_outline,
-                          value: '${user.poin}',
-                          label: 'Total\nPoin',
-                          color: AppTheme.warning),
+                        icon: Icons.star_outline,
+                        value: '${user.poin}',
+                        label: 'Total\nPoin',
+                        color: AppTheme.warning,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
 
                   // ── Badges
-                  const Text('Badge & Pencapaian',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    'Badge & Pencapaian',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   const SizedBox(height: 10),
                   user.badges.isEmpty
-                      ? const Text('Belum ada badge',
-                          style: TextStyle(color: AppTheme.textSecondary))
+                      ? const Text(
+                          'Belum ada badge',
+                          style: TextStyle(color: AppTheme.textSecondary),
+                        )
                       : Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -126,13 +169,16 @@ class ProfileTab extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   // ── Activity
-                  const Text('Aktivitas Terbaru',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    'Aktivitas Terbaru',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   const SizedBox(height: 10),
                   user.activities.isEmpty
-                      ? const Text('Belum ada aktivitas',
-                          style: TextStyle(color: AppTheme.textSecondary))
+                      ? const Text(
+                          'Belum ada aktivitas',
+                          style: TextStyle(color: AppTheme.textSecondary),
+                        )
                       : Column(
                           children: user.activities
                               .take(5)
@@ -147,10 +193,13 @@ class ProfileTab extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () => _showLogoutDialog(context, authProvider),
                       icon: const Icon(Icons.logout, color: AppTheme.error),
-                      label: const Text('Keluar',
-                          style: TextStyle(color: AppTheme.error)),
+                      label: const Text(
+                        'Keluar',
+                        style: TextStyle(color: AppTheme.error),
+                      ),
                       style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppTheme.error)),
+                        side: const BorderSide(color: AppTheme.error),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -216,14 +265,15 @@ class _RoleSwitcher extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Mode Aktif Saya',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            const Text(
+              'Mode Aktif Saya',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
             const SizedBox(height: 4),
             const Text(
-                'Ganti peran sesuai yang ingin kamu lakukan sekarang.',
-                style: TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 12)),
+              'Ganti peran sesuai yang ingin kamu lakukan sekarang.',
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+            ),
             const SizedBox(height: 14),
             Row(
               children: [
@@ -242,8 +292,7 @@ class _RoleSwitcher extends StatelessWidget {
                   desc: 'Menjawab',
                   role: UserRole.mentor,
                   current: currentRole,
-                  onTap: () => _showRoleRequestDialog(
-                      context, UserRole.mentor),
+                  onTap: () => _showRoleRequestDialog(context, UserRole.mentor),
                 ),
                 const SizedBox(width: 8),
                 _RoleButton(
@@ -252,8 +301,8 @@ class _RoleSwitcher extends StatelessWidget {
                   desc: 'Mengawasi',
                   role: UserRole.moderator,
                   current: currentRole,
-                  onTap: () => _showRoleRequestDialog(
-                      context, UserRole.moderator),
+                  onTap: () =>
+                      _showRoleRequestDialog(context, UserRole.moderator),
                 ),
               ],
             ),
@@ -262,24 +311,32 @@ class _RoleSwitcher extends StatelessWidget {
               const SizedBox(height: 14),
               Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.warning.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color: AppTheme.warning.withValues(alpha: 0.3)),
+                    color: AppTheme.warning.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.hourglass_top,
-                        size: 16, color: AppTheme.warning),
+                    const Icon(
+                      Icons.hourglass_top,
+                      size: 16,
+                      color: AppTheme.warning,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Permohonan menjadi ${pendingRequest.requestedRole == UserRole.mentor ? "Mentor" : "Moderator"} sedang menunggu persetujuan guru.',
                         style: const TextStyle(
-                            color: AppTheme.warning, fontSize: 12),
+                          color: AppTheme.warning,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ],
@@ -315,8 +372,9 @@ class _RoleSwitcher extends StatelessWidget {
     final requirements = isMentor
         ? roleProvider.getMentorRequirements(user)
         : roleProvider.getModeratorRequirements(user);
-    final canApply =
-        isMentor ? roleProvider.canBecomeMentor(user) : roleProvider.canBecomeModerator(user);
+    final canApply = isMentor
+        ? roleProvider.canBecomeMentor(user)
+        : roleProvider.canBecomeModerator(user);
     final roleLabel = isMentor ? 'Mentor' : 'Moderator';
 
     showModalBottomSheet(
@@ -344,15 +402,21 @@ class _RoleSwitcher extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Menjadi $roleLabel',
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
+                      Text(
+                        'Menjadi $roleLabel',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       Text(
                         isMentor
                             ? 'Bantu teman-temanmu dengan menjawab tiket di Klinik Kode'
                             : 'Jaga komunitas agar tetap kondusif dan produktif',
                         style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 12),
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -362,41 +426,41 @@ class _RoleSwitcher extends StatelessWidget {
             const SizedBox(height: 20),
 
             // ── Requirements checklist
-            const Text('Persyaratan:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            const Text(
+              'Persyaratan:',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
             const SizedBox(height: 10),
-            ...requirements.entries.map((entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        entry.value
-                            ? Icons.check_circle
-                            : Icons.cancel,
-                        size: 20,
-                        color: entry.value
-                            ? AppTheme.success
-                            : AppTheme.error,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          entry.key,
-                          style: TextStyle(
-                            color: entry.value
-                                ? AppTheme.textPrimary
-                                : AppTheme.error,
-                            fontWeight: entry.value
-                                ? FontWeight.normal
-                                : FontWeight.w600,
-                            fontSize: 13,
-                          ),
+            ...requirements.entries.map(
+              (entry) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      entry.value ? Icons.check_circle : Icons.cancel,
+                      size: 20,
+                      color: entry.value ? AppTheme.success : AppTheme.error,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        entry.key,
+                        style: TextStyle(
+                          color: entry.value
+                              ? AppTheme.textPrimary
+                              : AppTheme.error,
+                          fontWeight: entry.value
+                              ? FontWeight.normal
+                              : FontWeight.w600,
+                          fontSize: 13,
                         ),
                       ),
-                    ],
-                  ),
-                )),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
 
             if (!canApply) ...[
@@ -406,18 +470,17 @@ class _RoleSwitcher extends StatelessWidget {
                   color: AppTheme.error.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color: AppTheme.error.withValues(alpha: 0.2)),
+                    color: AppTheme.error.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.info_outline,
-                        size: 16, color: AppTheme.error),
+                    Icon(Icons.info_outline, size: 16, color: AppTheme.error),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Kamu belum memenuhi semua persyaratan. Terus berkontribusi untuk memenuhinya!',
-                        style:
-                            TextStyle(color: AppTheme.error, fontSize: 12),
+                        style: TextStyle(color: AppTheme.error, fontSize: 12),
                       ),
                     ),
                   ],
@@ -437,18 +500,21 @@ class _RoleSwitcher extends StatelessWidget {
                   color: AppTheme.success.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color: AppTheme.success.withValues(alpha: 0.2)),
+                    color: AppTheme.success.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.check_circle_outline,
-                        size: 16, color: AppTheme.success),
+                    Icon(
+                      Icons.check_circle_outline,
+                      size: 16,
+                      color: AppTheme.success,
+                    ),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Semua persyaratan terpenuhi! Permohonanmu akan dikirim ke guru untuk disetujui.',
-                        style: TextStyle(
-                            color: AppTheme.success, fontSize: 12),
+                        style: TextStyle(color: AppTheme.success, fontSize: 12),
                       ),
                     ),
                   ],
@@ -462,7 +528,8 @@ class _RoleSwitcher extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                          'Permohonan menjadi $roleLabel berhasil dikirim! Menunggu persetujuan guru.'),
+                        'Permohonan menjadi $roleLabel berhasil dikirim! Menunggu persetujuan guru.',
+                      ),
                       backgroundColor: AppTheme.success,
                     ),
                   );
@@ -507,8 +574,7 @@ class _RoleButton extends StatelessWidget {
                 : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color:
-                  isSelected ? AppTheme.primary : Colors.transparent,
+              color: isSelected ? AppTheme.primary : Colors.transparent,
               width: 2,
             ),
           ),
@@ -516,16 +582,21 @@ class _RoleButton extends StatelessWidget {
             children: [
               Text(icon, style: const TextStyle(fontSize: 20)),
               const SizedBox(height: 4),
-              Text(label,
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected
-                          ? AppTheme.primary
-                          : AppTheme.textSecondary)),
-              Text(desc,
-                  style: const TextStyle(
-                      fontSize: 10, color: AppTheme.textSecondary)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? AppTheme.primary : AppTheme.textSecondary,
+                ),
+              ),
+              Text(
+                desc,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
             ],
           ),
         ),
@@ -540,11 +611,12 @@ class _StatCard extends StatelessWidget {
   final String value, label;
   final Color color;
 
-  const _StatCard(
-      {required this.icon,
-      required this.value,
-      required this.label,
-      required this.color});
+  const _StatCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -556,16 +628,23 @@ class _StatCard extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 26),
               const SizedBox(height: 6),
-              Text(value,
-                  style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: color)),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 11)),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 11,
+                ),
+              ),
             ],
           ),
         ),
@@ -594,11 +673,14 @@ class _BadgeChip extends StatelessWidget {
         children: [
           const Icon(Icons.military_tech, size: 14, color: Colors.white),
           const SizedBox(width: 4),
-          Text(label,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -627,8 +709,9 @@ class _ActivityTile extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: (isReply ? AppTheme.success : AppTheme.primary)
-                  .withValues(alpha: 0.12),
+              color: (isReply ? AppTheme.success : AppTheme.primary).withValues(
+                alpha: 0.12,
+              ),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -642,20 +725,29 @@ class _ActivityTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(activity.title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 13)),
-                Text(activity.description,
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 12),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  activity.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  activity.description,
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
-          Text(_timeAgo(activity.time),
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 11)),
+          Text(
+            _timeAgo(activity.time),
+            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+          ),
         ],
       ),
     );

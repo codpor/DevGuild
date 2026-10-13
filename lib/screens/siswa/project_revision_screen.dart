@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../constants/app_strings.dart';
 import '../../models/models.dart';
+import '../../models/local_image.dart';
+import '../../widgets/image_upload_field.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../utils/result.dart';
@@ -23,6 +25,7 @@ class _ProjectRevisionScreenState extends State<ProjectRevisionScreen> {
   final _github = TextEditingController();
   final _team = TextEditingController();
   final _tech = TextEditingController();
+  LocalImage? _screenshot;
   String _category = AppStrings.projectCategories.first;
 
   @override
@@ -34,6 +37,7 @@ class _ProjectRevisionScreenState extends State<ProjectRevisionScreen> {
         .where((project) => project.id == widget.projectId)
         .firstOrNull;
     if (project != null) {
+      _screenshot = project.screenshot;
       _title.text = project.title;
       _description.text = project.description;
       _demo.text = project.linkAkses;
@@ -72,6 +76,8 @@ class _ProjectRevisionScreenState extends State<ProjectRevisionScreen> {
       linkGithub: _github.text,
       teamMembers: _team.text.split(','),
       teknologi: _tech.text.split(','),
+      screenshot: _screenshot,
+      updateScreenshot: true,
     );
     if (result is Failure<ProjectModel>) {
       ScaffoldMessenger.of(context)
@@ -124,6 +130,12 @@ class _ProjectRevisionScreenState extends State<ProjectRevisionScreen> {
               const SizedBox(height: 8),
               Text(project.guruFeedback),
             ],
+            const SizedBox(height: 20),
+            ImageUploadField(
+              value: _screenshot,
+              label: 'Screenshot Karya',
+              onChanged: (image) => setState(() => _screenshot = image),
+            ),
             const SizedBox(height: 20),
             TextFormField(
               controller: _title,

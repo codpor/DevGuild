@@ -121,11 +121,16 @@ void main() {
       find.widgetWithText(TextFormField, 'Nama Karya'),
       'Portofolio Baru',
     );
-    await tester.scrollUntilVisible(
-      find.text('Kirim Revisi'),
-      250,
-      scrollable: find.byType(Scrollable).last,
+    final formScroll = tester.state<ScrollableState>(
+      find
+          .descendant(
+            of: find.byType(ProjectRevisionScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
+    formScroll.position.jumpTo(formScroll.position.maxScrollExtent);
+    await tester.pumpAndSettle();
     await tester.ensureVisible(
       find.widgetWithText(ElevatedButton, 'Kirim Revisi'),
     );

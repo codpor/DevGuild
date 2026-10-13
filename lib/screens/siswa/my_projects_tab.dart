@@ -5,6 +5,7 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/project_status_badge.dart';
+import '../../widgets/local_image_view.dart';
 import 'project_revision_screen.dart';
 import 'showcase_tab.dart';
 
@@ -96,6 +97,10 @@ class _MyProjectCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ProjectStatusBadge(project: project),
+            if (project.screenshot != null) ...[
+              const SizedBox(height: 12),
+              LocalImageView(image: project.screenshot),
+            ],
             const SizedBox(height: 12),
             Text(project.title, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),

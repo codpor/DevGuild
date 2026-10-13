@@ -1,3 +1,5 @@
+import 'local_image.dart';
+
 // lib/models/models.dart
 // Semua model data untuk DevGuild
 
@@ -14,6 +16,7 @@ class UserModel {
   final String name;
   final String kelas;
   final String role; // 'Siswa' or 'Guru'
+  LocalImage? profilePhoto;
   UserRole activeRole;
   int poin;
   int ticketsCreated;
@@ -29,6 +32,7 @@ class UserModel {
     required this.name,
     required this.kelas,
     required this.role,
+    this.profilePhoto,
     this.activeRole = UserRole.mentee,
     this.poin = 0,
     this.ticketsCreated = 0,
@@ -114,6 +118,7 @@ class ProjectModel {
   String linkGithub;
   List<String> teamMembers;
   List<String> teknologi;
+  LocalImage? screenshot;
   bool isValidated;
   bool isRejected;
   String guruFeedback;
@@ -132,6 +137,7 @@ class ProjectModel {
     this.linkGithub = '',
     this.teamMembers = const [],
     this.teknologi = const [],
+    this.screenshot,
     this.isValidated = false,
     this.isRejected = false,
     this.guruFeedback = '',

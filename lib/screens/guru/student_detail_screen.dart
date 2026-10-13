@@ -53,6 +53,15 @@ class StudentDetailScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          if (student.profilePhoto != null) ...[
+            Center(
+              child: CircleAvatar(
+                radius: 40,
+                backgroundImage: MemoryImage(student.profilePhoto!.bytes),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Text(student.name, style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 8),
           Text('NIS: ${student.nis}'),

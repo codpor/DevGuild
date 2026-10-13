@@ -2,7 +2,9 @@
 // Provider khusus autentikasi & manajemen user
 
 import 'package:flutter/material.dart';
+
 import '../models/models.dart';
+import '../models/local_image.dart';
 import '../repositories/app_repository.dart';
 import '../utils/password_hasher.dart';
 import '../utils/result.dart';
@@ -35,17 +37,11 @@ class AuthProvider with ChangeNotifier {
 
     final user = _repo.getUserByNis(nis.trim());
     if (user == null) {
-      return const Failure(
-        'NIS tidak ditemukan',
-        code: 'NIS_NOT_FOUND',
-      );
+      return const Failure('NIS tidak ditemukan', code: 'NIS_NOT_FOUND');
     }
 
     if (!PasswordHasher.verify(password, user.password)) {
-      return const Failure(
-        'Password salah',
-        code: 'WRONG_PASSWORD',
-      );
+      return const Failure('Password salah', code: 'WRONG_PASSWORD');
     }
 
     _currentUser = user;
@@ -62,10 +58,7 @@ class AuthProvider with ChangeNotifier {
     required String password,
   }) {
     if (_repo.nisExists(nis.trim())) {
-      return const Failure(
-        AppStrings.nisAlreadyRegistered,
-        code: 'NIS_EXISTS',
-      );
+      return const Failure(AppStrings.nisAlreadyRegistered, code: 'NIS_EXISTS');
     }
 
     final newUser = UserModel(
@@ -86,6 +79,21 @@ class AuthProvider with ChangeNotifier {
   void logout() {
     _currentUser = null;
     notifyListeners();
+  }
+
+  Result<UserModel> updateProfilePhoto(
+    LocalImage? photo, {
+    required String userId,
+  }) {
+    final user = _currentUser;
+    if (user == null || user.id != userId) {
+      return const Failure(
+        'Foto hanya dapat diubah oleh pemilik akun yang sedang masuk.',
+      );
+    }
+    user.profilePhoto = photo;
+    notifyListeners();
+    return Success(user);
   }
 
   // ────────────── Authorization Checks ──────────────

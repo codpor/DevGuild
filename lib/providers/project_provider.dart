@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/models.dart';
+import '../models/local_image.dart';
 import '../repositories/app_repository.dart';
 import '../constants/app_strings.dart';
 import '../utils/result.dart';
@@ -44,6 +45,8 @@ class ProjectProvider with ChangeNotifier {
     required String linkGithub,
     required List<String> teamMembers,
     required List<String> teknologi,
+    LocalImage? screenshot,
+    bool updateScreenshot = false,
   }) {
     final user = _authProvider.currentUser;
     if (user == null || user.role != 'Siswa') {
@@ -82,6 +85,7 @@ class ProjectProvider with ChangeNotifier {
     project.linkGithub = linkGithub.trim();
     project.teamMembers = members.isEmpty ? [user.name] : members;
     project.teknologi = clean(teknologi);
+    if (updateScreenshot) project.screenshot = screenshot;
     project.isValidated = false;
     project.isRejected = false;
     // Catatan terakhir tetap tersedia sampai guru meninjau ulang.
