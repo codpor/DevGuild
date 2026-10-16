@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/role_provider.dart';
 import '../../models/models.dart';
+import '../../utils/result.dart';
 import '../../theme.dart';
 import 'student_detail_screen.dart';
 import 'student_account_dialogs.dart';
@@ -467,13 +468,19 @@ class _RoleRequestCard extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      roleProvider.approveRoleRequest(request.id);
+                      final result = roleProvider.approveRoleRequest(
+                        request.id,
+                      );
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            '${request.userName} disetujui sebagai $roleLabel!',
+                            result is Failure<RoleRequestModel>
+                                ? result.message
+                                : '${request.userName} disetujui sebagai $roleLabel!',
                           ),
-                          backgroundColor: AppTheme.success,
+                          backgroundColor: result is Failure<RoleRequestModel>
+                              ? AppTheme.error
+                              : AppTheme.success,
                         ),
                       );
                     },
@@ -514,7 +521,19 @@ class _RoleRequestCard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              roleProvider.rejectRoleRequest(requestId, feedbackC.text.trim());
+              final result = roleProvider.rejectRoleRequest(
+                requestId,
+                feedbackC.text.trim(),
+              );
+              if (result is Failure<RoleRequestModel>) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(result.message),
+                    backgroundColor: AppTheme.error,
+                  ),
+                );
+                return;
+              }
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

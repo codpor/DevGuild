@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../models/models.dart';
+import '../../utils/result.dart';
 import '../../theme.dart';
 import '../../models/local_image.dart';
 import '../../widgets/image_upload_field.dart';
@@ -201,7 +202,6 @@ class ShowcaseTab extends StatelessWidget {
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
-                    if (titleC.text.isEmpty || descC.text.isEmpty) return;
                     final teamList = teamC.text.isEmpty
                         ? [user.name]
                         : teamC.text
@@ -216,7 +216,7 @@ class ShowcaseTab extends StatelessWidget {
                               .map((s) => s.trim())
                               .where((s) => s.isNotEmpty)
                               .toList();
-                    projectProvider.addProject(
+                    final result = projectProvider.addProject(
                       ProjectModel(
                         id: 'p${DateTime.now().millisecondsSinceEpoch}',
                         authorId: user.id,
@@ -233,6 +233,15 @@ class ShowcaseTab extends StatelessWidget {
                         createdAt: DateTime.now(),
                       ),
                     );
+                    if (result is Failure<ProjectModel>) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(result.message),
+                          backgroundColor: AppTheme.error,
+                        ),
+                      );
+                      return;
+                    }
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(

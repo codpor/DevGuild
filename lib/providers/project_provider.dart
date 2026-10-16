@@ -111,8 +111,53 @@ class ProjectProvider with ChangeNotifier {
 
   // ────────────── Actions ──────────────
 
-  void addProject(ProjectModel project) {
-    _repo.addProject(project);
+  Result<ProjectModel> addProject(ProjectModel project) {
+    final user = _authProvider.currentUser;
+    if (user == null || user.role != 'Siswa') {
+      return const Failure('Silakan masuk sebagai siswa terlebih dahulu.');
+    }
+    if (project.authorId != user.id ||
+        project.authorName != user.name ||
+        project.authorKelas != user.kelas) {
+      return const Failure('Identitas pemilik karya tidak sesuai akun.');
+    }
+    if (project.id.trim().isEmpty ||
+        _repo.getAllProjects().any((existing) => existing.id == project.id)) {
+      return const Failure('ID karya kosong atau sudah digunakan.');
+    }
+    if (project.isValidated ||
+        project.isRejected ||
+        project.guruFeedback.isNotEmpty ||
+        project.likes != 0) {
+      return const Failure('Karya baru harus menunggu peninjauan guru.');
+    }
+    final validationError =
+        Validators.validateRequired(project.title, 'Nama karya') ??
+        Validators.validateRequired(project.description, 'Deskripsi') ??
+        (AppStrings.projectCategories.contains(project.category)
+            ? null
+            : 'Pilih kategori karya yang valid.') ??
+        Validators.validateOptionalUrl(project.linkAkses) ??
+        Validators.validateOptionalUrl(project.linkGithub);
+    if (validationError != null) return Failure(validationError);
+
+    // Simpan salinan agar model milik pemanggil tidak dapat mengubah status review.
+    final submitted = ProjectModel(
+      id: project.id,
+      authorId: user.id,
+      authorName: user.name,
+      authorKelas: user.kelas,
+      title: project.title.trim(),
+      description: project.description.trim(),
+      category: project.category,
+      linkAkses: project.linkAkses.trim(),
+      linkGithub: project.linkGithub.trim(),
+      teamMembers: List.of(project.teamMembers),
+      teknologi: List.of(project.teknologi),
+      screenshot: project.screenshot,
+      createdAt: DateTime.now(),
+    );
+    _repo.addProject(submitted);
 
     _authProvider.addActivity(
       ActivityItem(
@@ -124,6 +169,7 @@ class ProjectProvider with ChangeNotifier {
     );
 
     notifyListeners();
+    return Success(submitted);
   }
 
   void validateProject(

@@ -2,8 +2,10 @@
 // Provider khusus manajemen role & permohonan role
 
 import 'package:flutter/material.dart';
+
 import '../models/models.dart';
 import '../repositories/app_repository.dart';
+import '../utils/result.dart';
 import 'auth_provider.dart';
 
 class RoleProvider with ChangeNotifier {
@@ -34,7 +36,7 @@ class RoleProvider with ChangeNotifier {
   /// Mentee: langsung switch tanpa approval
   void switchToMentee() {
     final user = _authProvider.currentUser;
-    if (user == null) return;
+    if (user == null || user.role != 'Siswa') return;
     user.activeRole = UserRole.mentee;
     notifyListeners();
     _authProvider.notifyListeners();
@@ -74,25 +76,36 @@ class RoleProvider with ChangeNotifier {
 
   // ────────────── Role Requests ──────────────
 
-  bool hasPendingRoleRequest(String userId) => _repo
-      .getAllRoleRequests()
-      .any((r) => r.userId == userId && r.status == RoleRequestStatus.pending);
+  bool hasPendingRoleRequest(String userId) => _repo.getAllRoleRequests().any(
+    (r) => r.userId == userId && r.status == RoleRequestStatus.pending,
+  );
 
   RoleRequestModel? getPendingRequest(String userId) => _repo
       .getAllRoleRequests()
-      .where(
-          (r) => r.userId == userId && r.status == RoleRequestStatus.pending)
+      .where((r) => r.userId == userId && r.status == RoleRequestStatus.pending)
       .firstOrNull;
 
   /// Submit permohonan role (Mentor/Moderator) — perlu approval guru
-  void submitRoleRequest(UserRole role) {
+  Result<RoleRequestModel> submitRoleRequest(UserRole role) {
     final user = _authProvider.currentUser;
-    if (user == null) return;
-    if (hasPendingRoleRequest(user.id)) return;
+    if (user == null || user.role != 'Siswa') {
+      return const Failure('Hanya siswa aktif yang dapat mengajukan role.');
+    }
+    if (role == UserRole.mentee || user.activeRole == role) {
+      return const Failure('Pilih role baru Mentor atau Moderator.');
+    }
+    if (hasPendingRoleRequest(user.id)) {
+      return const Failure(
+        'Kamu sudah memiliki permohonan yang sedang diproses.',
+      );
+    }
+    if (!_meetsRequirements(user, role)) {
+      return const Failure('Persyaratan role belum terpenuhi.');
+    }
 
     final projectCount = _repo.getValidatedProjectCount(user.id);
-    _repo.addRoleRequest(RoleRequestModel(
-      id: 'rr${DateTime.now().millisecondsSinceEpoch}',
+    final request = RoleRequestModel(
+      id: 'rr${DateTime.now().microsecondsSinceEpoch}',
       userId: user.id,
       userName: user.name,
       userKelas: user.kelas,
@@ -101,25 +114,59 @@ class RoleProvider with ChangeNotifier {
       userPoin: user.poin,
       userProjectCount: projectCount,
       userTicketsAnswered: user.ticketsAnswered,
-    ));
+    );
+    _repo.addRoleRequest(request);
     notifyListeners();
+    return Success(request);
   }
 
-  void approveRoleRequest(String requestId) {
-    final request = _repo.getRoleRequestById(requestId);
-    request.status = RoleRequestStatus.approved;
-    final user = _repo.getUserById(request.userId);
-    if (user != null) {
-      user.activeRole = request.requestedRole;
+  bool _meetsRequirements(UserModel user, UserRole role) => switch (role) {
+    UserRole.mentor => canBecomeMentor(user),
+    UserRole.moderator => canBecomeModerator(user),
+    UserRole.mentee => false,
+  };
+
+  RoleRequestModel? _pendingRequestById(String requestId) => _repo
+      .getAllRoleRequests()
+      .where((r) => r.id == requestId && r.status == RoleRequestStatus.pending)
+      .firstOrNull;
+
+  Result<RoleRequestModel> approveRoleRequest(String requestId) {
+    if (!_authProvider.canManageStudents) {
+      return const Failure('Hanya guru aktif yang dapat menyetujui role.');
     }
+    final request = _pendingRequestById(requestId);
+    if (request == null) {
+      return const Failure('Permohonan tidak ditemukan atau sudah diproses.');
+    }
+    final user = _repo.getUserById(request.userId);
+    if (user == null || user.role != 'Siswa' || !user.isActive) {
+      return const Failure('Pemohon harus merupakan siswa aktif.');
+    }
+    if (!_meetsRequirements(user, request.requestedRole)) {
+      return const Failure('Persyaratan role siswa sudah tidak terpenuhi.');
+    }
+    request.status = RoleRequestStatus.approved;
+    user.activeRole = request.requestedRole;
     notifyListeners();
     _authProvider.notifyListeners();
+    return Success(request);
   }
 
-  void rejectRoleRequest(String requestId, String feedback) {
-    final request = _repo.getRoleRequestById(requestId);
+  Result<RoleRequestModel> rejectRoleRequest(
+    String requestId,
+    String feedback,
+  ) {
+    if (!_authProvider.canManageStudents) {
+      return const Failure('Hanya guru aktif yang dapat menolak role.');
+    }
+    final request = _pendingRequestById(requestId);
+    if (request == null) {
+      return const Failure('Permohonan tidak ditemukan atau sudah diproses.');
+    }
     request.status = RoleRequestStatus.rejected;
-    request.feedback = feedback;
+    request.feedback = feedback.trim();
     notifyListeners();
+    return Success(request);
   }
 }

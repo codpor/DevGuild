@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:go_router/go_router.dart';
 
+import '../../utils/result.dart';
 import '../../router/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/role_provider.dart';
@@ -538,7 +540,16 @@ class _RoleSwitcher extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: () {
-                  roleProvider.submitRoleRequest(role);
+                  final result = roleProvider.submitRoleRequest(role);
+                  if (result is Failure<RoleRequestModel>) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(result.message),
+                        backgroundColor: AppTheme.error,
+                      ),
+                    );
+                    return;
+                  }
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
