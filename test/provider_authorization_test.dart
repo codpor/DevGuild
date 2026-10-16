@@ -325,7 +325,7 @@ void main() {
         final initialPoints = student.poin;
         final initialActivities = student.activities.length;
         expect(projects.addProject(input), isA<Success<ProjectModel>>());
-        final saved = repo.getProjectById(input.id);
+        final saved = repo.getProjectById(input.id)!;
         expect(saved.title, 'Karya baru');
         expect(saved.description, 'Deskripsi karya');
         expect(saved.createdAt.isAfter(input.createdAt), isTrue);

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../repositories/app_repository.dart';
 import '../constants/app_strings.dart';
+import '../utils/result.dart';
+import '../utils/validators.dart';
 import 'auth_provider.dart';
 
 class TicketProvider with ChangeNotifier {
@@ -21,6 +23,7 @@ class TicketProvider with ChangeNotifier {
 
   // ────────────── Queries ──────────────
   List<TicketModel> get allTickets => _repo.getAllTickets();
+  TicketModel? getTicketById(String ticketId) => _repo.getTicketById(ticketId);
 
   List<TicketModel> get openTickets => _repo
       .getAllTickets()
@@ -67,10 +70,7 @@ class TicketProvider with ChangeNotifier {
         reply.content.trim().isEmpty) {
       return;
     }
-    final ticket = _repo
-        .getAllTickets()
-        .where((t) => t.id == ticketId)
-        .firstOrNull;
+    final ticket = _repo.getTicketById(ticketId);
     if (ticket == null ||
         ticket.status == TicketStatus.solved ||
         ticket.replies.any((r) => r.id == reply.id)) {
@@ -101,10 +101,7 @@ class TicketProvider with ChangeNotifier {
 
   void markSolved(String ticketId, String replyId) {
     final user = _authProvider.currentUser;
-    final ticket = _repo
-        .getAllTickets()
-        .where((t) => t.id == ticketId)
-        .firstOrNull;
+    final ticket = _repo.getTicketById(ticketId);
     if (user == null ||
         ticket == null ||
         ticket.authorId != user.id ||
@@ -126,24 +123,53 @@ class TicketProvider with ChangeNotifier {
 
   // ────────────── Moderator Actions ──────────────
 
-  void forceMarkSolved(String ticketId) {
-    if (!_authProvider.canModerateTicket()) return;
+  Result<TicketModel> forceMarkSolved(String ticketId) {
+    if (!_authProvider.canModerateTicket()) {
+      return const Failure(
+        'Hanya guru atau moderator aktif yang dapat menutup tiket.',
+      );
+    }
     final ticket = _repo.getTicketById(ticketId);
+    if (ticket == null) {
+      return const Failure('Tiket tidak ditemukan.', code: 'TICKET_NOT_FOUND');
+    }
     ticket.status = TicketStatus.solved;
     notifyListeners();
+    return Success(ticket);
   }
 
-  void deleteReply(String ticketId, String replyId) {
-    if (!_authProvider.canModerateTicket()) return;
+  Result<TicketModel> deleteReply(String ticketId, String replyId) {
+    if (!_authProvider.canModerateTicket()) {
+      return const Failure(
+        'Hanya guru atau moderator aktif yang dapat menghapus balasan.',
+      );
+    }
     final ticket = _repo.getTicketById(ticketId);
+    if (ticket == null) {
+      return const Failure('Tiket tidak ditemukan.', code: 'TICKET_NOT_FOUND');
+    }
+    if (!ticket.replies.any((reply) => reply.id == replyId)) {
+      return const Failure('Balasan tidak ditemukan.', code: 'REPLY_NOT_FOUND');
+    }
     ticket.replies.removeWhere((r) => r.id == replyId);
     notifyListeners();
+    return Success(ticket);
   }
 
-  void updateTicketTitle(String ticketId, String newTitle) {
-    if (!_authProvider.canModerateTicket()) return;
+  Result<TicketModel> updateTicketTitle(String ticketId, String newTitle) {
+    if (!_authProvider.canModerateTicket()) {
+      return const Failure(
+        'Hanya guru atau moderator aktif yang dapat mengubah judul tiket.',
+      );
+    }
     final ticket = _repo.getTicketById(ticketId);
-    ticket.title = newTitle;
+    if (ticket == null) {
+      return const Failure('Tiket tidak ditemukan.', code: 'TICKET_NOT_FOUND');
+    }
+    final error = Validators.validateRequired(newTitle, 'Judul tiket');
+    if (error != null) return Failure(error, code: 'INVALID_INPUT');
+    ticket.title = newTitle.trim();
     notifyListeners();
+    return Success(ticket);
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../utils/result.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/ticket_provider.dart';
 import '../../models/models.dart';
@@ -27,21 +29,23 @@ class _ClinicTabState extends State<ClinicTab> {
     if (_filter == 'Terbuka') {
       tickets = tickets.where((t) => t.status == TicketStatus.open).toList();
     } else if (_filter == 'Proses') {
-      tickets =
-          tickets.where((t) => t.status == TicketStatus.inProgress).toList();
+      tickets = tickets
+          .where((t) => t.status == TicketStatus.inProgress)
+          .toList();
     } else if (_filter == 'Solved') {
-      tickets =
-          tickets.where((t) => t.status == TicketStatus.solved).toList();
+      tickets = tickets.where((t) => t.status == TicketStatus.solved).toList();
     }
 
     // search
     if (_searchC.text.isNotEmpty) {
       final q = _searchC.text.toLowerCase();
       tickets = tickets
-          .where((t) =>
-              t.title.toLowerCase().contains(q) ||
-              t.description.toLowerCase().contains(q) ||
-              t.errorCode.toLowerCase().contains(q))
+          .where(
+            (t) =>
+                t.title.toLowerCase().contains(q) ||
+                t.description.toLowerCase().contains(q) ||
+                t.errorCode.toLowerCase().contains(q),
+          )
           .toList();
     }
 
@@ -52,14 +56,17 @@ class _ClinicTabState extends State<ClinicTab> {
           if (user.activeRole == UserRole.mentor ||
               user.activeRole == UserRole.moderator)
             Chip(
-              label: Text(user.activeRole == UserRole.mentor
-                  ? '🎓 Mentor Mode'
-                  : '🛡️ Moderator Mode'),
+              label: Text(
+                user.activeRole == UserRole.mentor
+                    ? '🎓 Mentor Mode'
+                    : '🛡️ Moderator Mode',
+              ),
               backgroundColor: AppTheme.primary.withValues(alpha: 0.12),
               labelStyle: const TextStyle(
-                  color: AppTheme.primary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600),
+                color: AppTheme.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           const SizedBox(width: 12),
         ],
@@ -84,22 +91,23 @@ class _ClinicTabState extends State<ClinicTab> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Row(
               children: ['Semua', 'Terbuka', 'Proses', 'Solved']
-                  .map((label) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(label),
-                          selected: _filter == label,
-                          onSelected: (_) =>
-                              setState(() => _filter = label),
-                          selectedColor: AppTheme.primary,
-                          labelStyle: TextStyle(
-                            color: _filter == label
-                                ? Colors.white
-                                : AppTheme.textSecondary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                  .map(
+                    (label) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(label),
+                        selected: _filter == label,
+                        onSelected: (_) => setState(() => _filter = label),
+                        selectedColor: AppTheme.primary,
+                        labelStyle: TextStyle(
+                          color: _filter == label
+                              ? Colors.white
+                              : AppTheme.textSecondary,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ))
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -108,12 +116,16 @@ class _ClinicTabState extends State<ClinicTab> {
           Expanded(
             child: tickets.isEmpty
                 ? const Center(
-                    child: Text('Tidak ada tiket ditemukan',
-                        style: TextStyle(color: AppTheme.textSecondary)))
+                    child: Text(
+                      'Tidak ada tiket ditemukan',
+                      style: TextStyle(color: AppTheme.textSecondary),
+                    ),
+                  )
                 : ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: tickets.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
                     itemBuilder: (context, i) =>
                         _TicketCard(ticket: tickets[i]),
                   ),
@@ -124,8 +136,10 @@ class _ClinicTabState extends State<ClinicTab> {
         onPressed: () => _showCreateTicketDialog(context),
         backgroundColor: AppTheme.primary,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Buat Tiket',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text(
+          'Buat Tiket',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -162,13 +176,18 @@ class _ClinicTabState extends State<ClinicTab> {
               children: [
                 Row(
                   children: [
-                    const Text('Buat Tiket Baru',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Buat Tiket Baru',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const Spacer(),
                     IconButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close)),
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(Icons.close),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -179,26 +198,28 @@ class _ClinicTabState extends State<ClinicTab> {
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            BorderSide(color: Colors.grey.shade300)),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
                     enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            BorderSide(color: Colors.grey.shade300)),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
                   ),
-                  items: [
-                    'PHP & MySQL',
-                    'HTML & CSS',
-                    'JavaScript',
-                    'Python',
-                    'Keamanan Web',
-                    'Umum'
-                  ]
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                      .toList(),
-                  onChanged: (v) =>
-                      setModalState(() => category = v!),
+                  items:
+                      [
+                            'PHP & MySQL',
+                            'HTML & CSS',
+                            'JavaScript',
+                            'Python',
+                            'Keamanan Web',
+                            'Umum',
+                          ]
+                          .map(
+                            (c) => DropdownMenuItem(value: c, child: Text(c)),
+                          )
+                          .toList(),
+                  onChanged: (v) => setModalState(() => category = v!),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -210,15 +231,15 @@ class _ClinicTabState extends State<ClinicTab> {
                   controller: descC,
                   maxLines: 3,
                   decoration: const InputDecoration(
-                      labelText: 'Deskripsi Masalah',
-                      alignLabelWithHint: true),
+                    labelText: 'Deskripsi Masalah',
+                    alignLabelWithHint: true,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: errorC,
                   maxLines: 2,
-                  style: const TextStyle(
-                      fontFamily: 'monospace', fontSize: 13),
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
                   decoration: const InputDecoration(
                     labelText: 'Pesan Error (opsional)',
                     alignLabelWithHint: true,
@@ -229,18 +250,20 @@ class _ClinicTabState extends State<ClinicTab> {
                 ElevatedButton(
                   onPressed: () {
                     if (titleC.text.isEmpty || descC.text.isEmpty) return;
-                    provider.addTicket(TicketModel(
-                      id: 't${DateTime.now().millisecondsSinceEpoch}',
-                      authorId: user.id,
-                      authorName: user.name,
-                      authorKelas: user.kelas,
-                      title: titleC.text,
-                      description: descC.text,
-                      errorCode: errorC.text,
-                      category: category,
-                      createdAt: DateTime.now(),
-                      replies: [],
-                    ));
+                    provider.addTicket(
+                      TicketModel(
+                        id: 't${DateTime.now().millisecondsSinceEpoch}',
+                        authorId: user.id,
+                        authorName: user.name,
+                        authorKelas: user.kelas,
+                        title: titleC.text,
+                        description: descC.text,
+                        errorCode: errorC.text,
+                        category: category,
+                        createdAt: DateTime.now(),
+                        replies: [],
+                      ),
+                    );
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -290,9 +313,9 @@ class _TicketCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) => TicketDetailScreen(ticket: ticket))),
+        context,
+        MaterialPageRoute(builder: (_) => TicketDetailScreen(ticket: ticket)),
+      ),
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -303,62 +326,98 @@ class _TicketCard extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: _statusColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(_statusLabel,
-                        style: TextStyle(
-                            color: _statusColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold)),
+                    child: Text(
+                      _statusLabel,
+                      style: TextStyle(
+                        color: _statusColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(ticket.category,
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontSize: 11)),
+                    child: Text(
+                      ticket.category,
+                      style: const TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 11,
+                      ),
+                    ),
                   ),
                   const Spacer(),
-                  Text(_timeAgo(ticket.createdAt),
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 11)),
+                  Text(
+                    _timeAgo(ticket.createdAt),
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 11,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
-              Text(ticket.title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 15)),
+              Text(
+                ticket.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
+              ),
               const SizedBox(height: 6),
-              Text(ticket.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 13)),
+              Text(
+                ticket.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppTheme.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Icon(Icons.person_outline,
-                      size: 14, color: AppTheme.textSecondary),
+                  const Icon(
+                    Icons.person_outline,
+                    size: 14,
+                    color: AppTheme.textSecondary,
+                  ),
                   const SizedBox(width: 4),
-                  Text('${ticket.authorName} · ${ticket.authorKelas}',
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 12)),
+                  Text(
+                    '${ticket.authorName} · ${ticket.authorKelas}',
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
                   const Spacer(),
-                  const Icon(Icons.chat_bubble_outline,
-                      size: 14, color: AppTheme.textSecondary),
+                  const Icon(
+                    Icons.chat_bubble_outline,
+                    size: 14,
+                    color: AppTheme.textSecondary,
+                  ),
                   const SizedBox(width: 4),
-                  Text('${ticket.replies.length} balasan',
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 12)),
+                  Text(
+                    '${ticket.replies.length} balasan',
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -390,12 +449,29 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   final _replyC = TextEditingController();
 
   @override
+  void dispose() {
+    _replyC.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final ticketProvider = Provider.of<TicketProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
-    final user = authProvider.currentUser!;
-    final ticket = ticketProvider.allTickets
-        .firstWhere((t) => t.id == widget.ticket.id);
+    final ticket = ticketProvider.getTicketById(widget.ticket.id);
+    final user = authProvider.currentUser;
+    if (ticket == null || user == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Detail Tiket')),
+        body: Center(
+          child: Text(
+            ticket == null
+                ? 'Tiket tidak ditemukan.'
+                : 'Silakan masuk terlebih dahulu.',
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -407,9 +483,15 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                 if (value == 'edit') {
                   _showEditTitleDialog(context, ticketProvider, ticket);
                 } else if (value == 'close') {
-                  ticketProvider.forceMarkSolved(ticket.id);
+                  final result = ticketProvider.forceMarkSolved(ticket.id);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Tiket ditutup oleh Moderator')),
+                    SnackBar(
+                      content: Text(
+                        result is Failure<TicketModel>
+                            ? result.message
+                            : 'Tiket ditutup oleh Moderator',
+                      ),
+                    ),
                   );
                 }
               },
@@ -445,20 +527,30 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                             _StatusBadge(ticket.status),
                             const SizedBox(width: 8),
                             Chip(
-                              label: Text(ticket.category,
-                                  style: const TextStyle(fontSize: 12)),
+                              label: Text(
+                                ticket.category,
+                                style: const TextStyle(fontSize: 12),
+                              ),
                               padding: EdgeInsets.zero,
                             ),
                           ],
                         ),
                         const SizedBox(height: 12),
-                        Text(ticket.title,
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text(
+                          ticket.title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 8),
-                        Text(ticket.description,
-                            style: const TextStyle(
-                                color: AppTheme.textSecondary, height: 1.5)),
+                        Text(
+                          ticket.description,
+                          style: const TextStyle(
+                            color: AppTheme.textSecondary,
+                            height: 1.5,
+                          ),
+                        ),
                         if (ticket.errorCode.isNotEmpty) ...[
                           const SizedBox(height: 12),
                           Container(
@@ -468,24 +560,32 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                               color: Colors.grey.shade900,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(ticket.errorCode,
-                                style: const TextStyle(
-                                    color: Color(0xFF4ADE80),
-                                    fontFamily: 'monospace',
-                                    fontSize: 12)),
+                            child: Text(
+                              ticket.errorCode,
+                              style: const TextStyle(
+                                color: Color(0xFF4ADE80),
+                                fontFamily: 'monospace',
+                                fontSize: 12,
+                              ),
+                            ),
                           ),
                         ],
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            const Icon(Icons.person_outline,
-                                size: 14, color: AppTheme.textSecondary),
+                            const Icon(
+                              Icons.person_outline,
+                              size: 14,
+                              color: AppTheme.textSecondary,
+                            ),
                             const SizedBox(width: 4),
                             Text(
-                                '${ticket.authorName} · ${ticket.authorKelas}',
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 12)),
+                              '${ticket.authorName} · ${ticket.authorKelas}',
+                              style: const TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -495,31 +595,41 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                 const SizedBox(height: 16),
 
                 // ── Replies
-                Text('${ticket.replies.length} Balasan',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  '${ticket.replies.length} Balasan',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
                 const SizedBox(height: 12),
-                ...ticket.replies.map((reply) => _ReplyCard(
-                      reply: reply,
-                      ticket: ticket,
-                      currentUser: user,
-                      onAccept: () {
-                        ticketProvider.markSolved(ticket.id, reply.id);
-                      },
-                    )),
+                ...ticket.replies.map(
+                  (reply) => _ReplyCard(
+                    reply: reply,
+                    ticket: ticket,
+                    currentUser: user,
+                    onAccept: () {
+                      ticketProvider.markSolved(ticket.id, reply.id);
+                    },
+                  ),
+                ),
                 if (ticket.replies.isEmpty)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Column(
                         children: [
-                          Icon(Icons.chat_bubble_outline,
-                              size: 48, color: Colors.grey.shade400),
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            size: 48,
+                            color: Colors.grey.shade400,
+                          ),
                           const SizedBox(height: 12),
-                          const Text('Belum ada balasan. Jadilah yang pertama!',
-                              textAlign: TextAlign.center,
-                              style:
-                                  TextStyle(color: AppTheme.textSecondary)),
+                          const Text(
+                            'Belum ada balasan. Jadilah yang pertama!',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppTheme.textSecondary),
+                          ),
                         ],
                       ),
                     ),
@@ -529,7 +639,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           ),
 
           // ── Reply input (hanya untuk Mentor / Guru)
-          if (ticket.status != TicketStatus.solved && authProvider.canReplyToTicket())
+          if (ticket.status != TicketStatus.solved &&
+              authProvider.canReplyToTicket())
             Container(
               padding: EdgeInsets.only(
                 left: 16,
@@ -555,7 +666,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       decoration: const InputDecoration(
                         hintText: 'Tulis balasan...',
                         contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -563,7 +676,11 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   CircleAvatar(
                     backgroundColor: AppTheme.primary,
                     child: IconButton(
-                      icon: const Icon(Icons.send, color: Colors.white, size: 20),
+                      icon: const Icon(
+                        Icons.send,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                       onPressed: () {
                         if (_replyC.text.isEmpty) return;
                         ticketProvider.addReply(
@@ -585,7 +702,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               ),
             ),
           // ── Info: hanya mentor yang bisa menjawab
-          if (ticket.status != TicketStatus.solved && !authProvider.canReplyToTicket())
+          if (ticket.status != TicketStatus.solved &&
+              !authProvider.canReplyToTicket())
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
@@ -595,11 +713,18 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.lock_outline, size: 16, color: AppTheme.textSecondary),
+                  Icon(
+                    Icons.lock_outline,
+                    size: 16,
+                    color: AppTheme.textSecondary,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Hanya Mentor/Moderator yang dapat menjawab tiket',
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -610,7 +735,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 
   void _showEditTitleDialog(
-      BuildContext context, TicketProvider provider, TicketModel ticket) {
+    BuildContext context,
+    TicketProvider provider,
+    TicketModel ticket,
+  ) {
     final titleC = TextEditingController(text: ticket.title);
     showDialog(
       context: context,
@@ -628,7 +756,15 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           ElevatedButton(
             onPressed: () {
               if (titleC.text.trim().isNotEmpty) {
-                provider.updateTicketTitle(ticket.id, titleC.text.trim());
+                final result = provider.updateTicketTitle(
+                  ticket.id,
+                  titleC.text.trim(),
+                );
+                if (result is Failure<TicketModel>) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(result.message)));
+                  return;
+                }
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Judul tiket diperbarui')),
@@ -680,9 +816,13 @@ class _ReplyCard extends StatelessWidget {
               CircleAvatar(
                 radius: 16,
                 backgroundColor: AppTheme.primary.withValues(alpha: 0.15),
-                child: Text(reply.authorName[0],
-                    style: const TextStyle(
-                        color: AppTheme.primary, fontWeight: FontWeight.bold)),
+                child: Text(
+                  reply.authorName[0],
+                  style: const TextStyle(
+                    color: AppTheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               Column(
@@ -690,45 +830,61 @@ class _ReplyCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(reply.authorName,
-                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                      Text(
+                        reply.authorName,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       if (reply.authorRole == UserRole.mentor) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 1),
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.success.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text('Mentor',
-                              style: TextStyle(
-                                  color: AppTheme.success,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            'Mentor',
+                            style: TextStyle(
+                              color: AppTheme.success,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                       if (reply.authorRole == UserRole.moderator) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 1),
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.warning.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text('Moderator',
-                              style: TextStyle(
-                                  color: AppTheme.warning,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            'Moderator',
+                            style: TextStyle(
+                              color: AppTheme.warning,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ],
                   ),
-                  Text(_timeAgo(reply.createdAt),
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 11)),
+                  Text(
+                    _timeAgo(reply.createdAt),
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 11,
+                    ),
+                  ),
                 ],
               ),
               const Spacer(),
@@ -737,18 +893,37 @@ class _ReplyCard extends StatelessWidget {
                   label: Text('✓ Jawaban Terbaik'),
                   backgroundColor: AppTheme.success,
                   labelStyle: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                   padding: EdgeInsets.zero,
                 ),
-              if (Provider.of<AuthProvider>(context, listen: false).canModerateTicket()) ...[
+              if (Provider.of<AuthProvider>(
+                context,
+                listen: false,
+              ).canModerateTicket()) ...[
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: AppTheme.error, size: 20),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: AppTheme.error,
+                    size: 20,
+                  ),
                   onPressed: () {
-                    Provider.of<TicketProvider>(context, listen: false).deleteReply(ticket.id, reply.id);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Balasan dihapus')));
+                    final result = Provider.of<TicketProvider>(
+                      context,
+                      listen: false,
+                    ).deleteReply(ticket.id, reply.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          result is Failure<TicketModel>
+                              ? result.message
+                              : 'Balasan dihapus',
+                        ),
+                      ),
+                    );
                   },
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
@@ -757,8 +932,10 @@ class _ReplyCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(reply.content,
-              style: const TextStyle(height: 1.5, fontSize: 14)),
+          Text(
+            reply.content,
+            style: const TextStyle(height: 1.5, fontSize: 14),
+          ),
           if (!isAccepted &&
               ticket.authorId == currentUser.id &&
               ticket.status != TicketStatus.solved) ...[
@@ -767,10 +944,15 @@ class _ReplyCard extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 onPressed: onAccept,
-                icon: const Icon(Icons.check_circle_outline,
-                    size: 16, color: AppTheme.success),
-                label: const Text('Tandai Solved',
-                    style: TextStyle(color: AppTheme.success)),
+                icon: const Icon(
+                  Icons.check_circle_outline,
+                  size: 16,
+                  color: AppTheme.success,
+                ),
+                label: const Text(
+                  'Tandai Solved',
+                  style: TextStyle(color: AppTheme.success),
+                ),
               ),
             ),
           ],
@@ -815,9 +997,14 @@ class _StatusBadge extends StatelessWidget {
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label,
-          style: TextStyle(
-              color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }

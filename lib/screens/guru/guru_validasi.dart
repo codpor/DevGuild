@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/project_provider.dart';
 import '../../models/models.dart';
+import '../../utils/result.dart';
 import '../../theme.dart';
 import '../../widgets/local_image_view.dart';
 
@@ -201,11 +202,20 @@ class _PendingProjectCard extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      projectProvider.validateProject(project.id, true);
+                      final result = projectProvider.validateProject(
+                        project.id,
+                        true,
+                      );
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Karya disetujui & masuk Showcase!'),
-                          backgroundColor: AppTheme.success,
+                        SnackBar(
+                          content: Text(
+                            result is Failure<ProjectModel>
+                                ? result.message
+                                : 'Karya disetujui & masuk Showcase!',
+                          ),
+                          backgroundColor: result is Failure<ProjectModel>
+                              ? AppTheme.error
+                              : AppTheme.success,
                         ),
                       );
                     },
@@ -277,11 +287,16 @@ class _PendingProjectCard extends StatelessWidget {
                 );
                 return;
               }
-              provider.validateProject(
+              final result = provider.validateProject(
                 project.id,
                 false,
                 feedback: feedbackC.text.trim(),
               );
+              if (result is Failure<ProjectModel>) {
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text(result.message)));
+                return;
+              }
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

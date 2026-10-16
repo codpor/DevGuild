@@ -23,6 +23,8 @@ class ProjectProvider with ChangeNotifier {
 
   // ────────────── Queries ──────────────
   List<ProjectModel> get allProjects => _repo.getAllProjects();
+  ProjectModel? getProjectById(String projectId) =>
+      _repo.getProjectById(projectId);
 
   List<ProjectModel> get myProjects {
     final user = _authProvider.currentUser;
@@ -52,10 +54,7 @@ class ProjectProvider with ChangeNotifier {
     if (user == null || user.role != 'Siswa') {
       return const Failure('Silakan masuk sebagai siswa terlebih dahulu.');
     }
-    final project = _repo
-        .getAllProjects()
-        .where((project) => project.id == projectId)
-        .firstOrNull;
+    final project = _repo.getProjectById(projectId);
     if (project == null) return const Failure('Karya tidak ditemukan.');
     if (project.authorId != user.id) {
       return const Failure('Kamu hanya dapat merevisi karya milik sendiri.');
@@ -172,15 +171,22 @@ class ProjectProvider with ChangeNotifier {
     return Success(submitted);
   }
 
-  void validateProject(
+  Result<ProjectModel> validateProject(
     String projectId,
     bool approved, {
     String feedback = '',
   }) {
-    if (_authProvider.currentUser?.role != 'Guru') return;
+    if (!_authProvider.canManageStudents) {
+      return const Failure('Hanya guru aktif yang dapat meninjau karya.');
+    }
     final project = _repo.getProjectById(projectId);
+    if (project == null) {
+      return const Failure('Karya tidak ditemukan.', code: 'PROJECT_NOT_FOUND');
+    }
     // Hanya karya pending yang boleh ditinjau; keputusan ulang tidak memberi poin.
-    if (project.isValidated || project.isRejected) return;
+    if (project.isValidated || project.isRejected) {
+      return const Failure('Karya sudah ditinjau.');
+    }
     project.isValidated = approved;
     project.isRejected = !approved;
     project.guruFeedback = feedback.trim();
@@ -188,15 +194,21 @@ class ProjectProvider with ChangeNotifier {
       _authProvider.addPoinToUser(project.authorId, poinProjectValidated);
     }
     notifyListeners();
+    return Success(project);
   }
 
-  void toggleLikeProject(String projectId) {
+  Result<ProjectModel> toggleLikeProject(String projectId) {
     final user = _authProvider.currentUser;
-    if (user == null) return;
+    if (user == null) return const Failure('Silakan masuk terlebih dahulu.');
 
     final project = _repo.getProjectById(projectId);
+    if (project == null) {
+      return const Failure('Karya tidak ditemukan.', code: 'PROJECT_NOT_FOUND');
+    }
 
-    if (!project.isValidated || project.isRejected) return;
+    if (!project.isValidated || project.isRejected) {
+      return const Failure('Hanya karya yang disetujui yang dapat disukai.');
+    }
 
     if (user.likedProjects.contains(projectId)) {
       user.likedProjects.remove(projectId);
@@ -214,6 +226,7 @@ class ProjectProvider with ChangeNotifier {
       }
     }
     notifyListeners();
+    return Success(project);
   }
 
   bool hasLikedProject(String projectId) {

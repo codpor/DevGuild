@@ -140,7 +140,7 @@ void main() {
   test('unauthorized or forged replies cannot contribute toward badges', () {
     repo.addTicket(ticket('other1', 'u4'));
     tickets.addReply('other1', reply('answer1'));
-    expect(repo.getTicketById('other1').replies, isEmpty);
+    expect(repo.getTicketById('other1')!.replies, isEmpty);
     student.activeRole = UserRole.mentor;
     tickets.addReply(
       'other1',
@@ -153,7 +153,7 @@ void main() {
       ),
     );
     tickets.addReply('missing', reply('unknown'));
-    expect(repo.getTicketById('other1').replies, isEmpty);
+    expect(repo.getTicketById('other1')!.replies, isEmpty);
     expect(student.poin, 0);
   });
 
@@ -163,11 +163,11 @@ void main() {
     tickets.addReply('other1', reply('accepted'));
     final before = student.poin;
     tickets.markSolved('other1', 'accepted');
-    expect(repo.getTicketById('other1').status, TicketStatus.inProgress);
+    expect(repo.getTicketById('other1')!.status, TicketStatus.inProgress);
     auth.logout();
     auth.login('2202', 'password123');
     tickets.markSolved('other1', 'missing');
-    expect(repo.getTicketById('other1').status, TicketStatus.inProgress);
+    expect(repo.getTicketById('other1')!.status, TicketStatus.inProgress);
     tickets.markSolved('other1', 'accepted');
     tickets.markSolved('other1', 'accepted');
     expect(student.badges, contains('Pemecah Masalah'));

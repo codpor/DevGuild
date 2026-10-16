@@ -420,12 +420,14 @@ class ProjectDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ProjectProvider>(context);
-    final catColor = _categoryColor(project.category);
-    // Get fresh project data from provider
-    final freshProject = provider.allProjects.firstWhere(
-      (p) => p.id == project.id,
-      orElse: () => project,
-    );
+    final freshProject = provider.getProjectById(project.id);
+    if (freshProject == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Detail Karya')),
+        body: const Center(child: Text('Karya tidak ditemukan.')),
+      );
+    }
+    final catColor = _categoryColor(freshProject.category);
     final isLiked = provider.hasLikedProject(freshProject.id);
 
     return Scaffold(
@@ -541,8 +543,16 @@ class ProjectDetailScreen extends StatelessWidget {
                   Row(
                     children: [
                       GestureDetector(
-                        onTap: () =>
-                            provider.toggleLikeProject(freshProject.id),
+                        onTap: () {
+                          final result = provider.toggleLikeProject(
+                            freshProject.id,
+                          );
+                          if (result is Failure<ProjectModel>) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(result.message)),
+                            );
+                          }
+                        },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.symmetric(

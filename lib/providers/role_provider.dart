@@ -126,10 +126,10 @@ class RoleProvider with ChangeNotifier {
     UserRole.mentee => false,
   };
 
-  RoleRequestModel? _pendingRequestById(String requestId) => _repo
-      .getAllRoleRequests()
-      .where((r) => r.id == requestId && r.status == RoleRequestStatus.pending)
-      .firstOrNull;
+  RoleRequestModel? _pendingRequestById(String requestId) {
+    final request = _repo.getRoleRequestById(requestId);
+    return request?.status == RoleRequestStatus.pending ? request : null;
+  }
 
   Result<RoleRequestModel> approveRoleRequest(String requestId) {
     if (!_authProvider.canManageStudents) {

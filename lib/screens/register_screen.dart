@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+
 import '../providers/auth_provider.dart';
 import '../theme.dart';
 import '../constants/app_strings.dart';
@@ -22,15 +23,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _nameC = TextEditingController();
   final _passwordC = TextEditingController();
   final _confirmPasswordC = TextEditingController();
-  
+
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _isLoading = false;
   String _selectedKelas = AppStrings.kelasList.first;
 
+  @override
+  void dispose() {
+    _nisC.dispose();
+    _nameC.dispose();
+    _passwordC.dispose();
+    _confirmPasswordC.dispose();
+    super.dispose();
+  }
+
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(milliseconds: 600)); // Simulasi network
     if (!mounted) return;
@@ -41,7 +51,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       kelas: _selectedKelas,
       password: _passwordC.text,
     );
-    
+
     if (!mounted) return;
     setState(() => _isLoading = false);
 
@@ -70,17 +80,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   const Icon(Icons.terminal, size: 56, color: Colors.white),
                   const SizedBox(height: 8),
-                  Text(AppStrings.appName,
-                      style: Theme.of(context)
-                          .textTheme
-                          .displayMedium
-                          ?.copyWith(color: Colors.white)),
+                  Text(
+                    AppStrings.appName,
+                    style: Theme.of(context).textTheme.displayMedium
+                        ?.copyWith(color: Colors.white),
+                  ),
                   const SizedBox(height: 4),
-                  Text(AppStrings.createAccount,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(color: Colors.white70)),
+                  Text(
+                    AppStrings.createAccount,
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(color: Colors.white70),
+                  ),
                   const SizedBox(height: 32),
                   Container(
                     decoration: BoxDecoration(
@@ -100,8 +110,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(AppStrings.register,
-                              style: Theme.of(context).textTheme.titleLarge),
+                          Text(
+                            AppStrings.register,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
                           const SizedBox(height: 24),
                           TextFormField(
                             controller: _nisC,
@@ -124,23 +136,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
                             initialValue: _selectedKelas,
+                            validator: Validators.validateKelas,
                             decoration: InputDecoration(
                               labelText: AppStrings.kelasLabel,
                               prefixIcon: const Icon(Icons.class_outlined),
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                      color: Colors.grey.shade300)),
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
                               enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                      color: Colors.grey.shade300)),
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
                             ),
                             items: AppStrings.kelasList
-                                .map((k) =>
-                                    DropdownMenuItem(value: k, child: Text(k)))
+                                .map(
+                                  (k) => DropdownMenuItem(
+                                    value: k,
+                                    child: Text(k),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (v) =>
                                 setState(() => _selectedKelas = v!),
@@ -154,11 +175,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               labelText: AppStrings.passwordLabel,
                               prefixIcon: const Icon(Icons.lock_outline),
                               suffixIcon: IconButton(
-                                icon: Icon(_obscurePassword
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined),
-                                onPressed: () =>
-                                    setState(() => _obscurePassword = !_obscurePassword),
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
                               ),
                             ),
                           ),
@@ -166,16 +190,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           TextFormField(
                             controller: _confirmPasswordC,
                             obscureText: _obscureConfirm,
-                            validator: (v) => Validators.validateConfirmPassword(v, _passwordC.text),
+                            validator: (v) =>
+                                Validators.validateConfirmPassword(
+                                  v,
+                                  _passwordC.text,
+                                ),
                             decoration: InputDecoration(
                               labelText: AppStrings.confirmPasswordLabel,
                               prefixIcon: const Icon(Icons.lock_clock_outlined),
                               suffixIcon: IconButton(
-                                icon: Icon(_obscureConfirm
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined),
-                                onPressed: () =>
-                                    setState(() => _obscureConfirm = !_obscureConfirm),
+                                icon: Icon(
+                                  _obscureConfirm
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscureConfirm = !_obscureConfirm,
+                                ),
                               ),
                             ),
                           ),
@@ -183,7 +214,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           SizedBox(
                             height: 52,
                             child: _isLoading
-                                ? const Center(child: CircularProgressIndicator())
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
                                 : ElevatedButton(
                                     onPressed: _register,
                                     child: const Text(AppStrings.registerNow),
@@ -195,11 +228,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             children: [
                               const Text(AppStrings.hasAccount),
                               GestureDetector(
-                                onTap: () => context.pop(), // Pop to go back to login
-                                child: const Text(AppStrings.login,
-                                    style: TextStyle(
-                                        color: AppTheme.primary,
-                                        fontWeight: FontWeight.bold)),
+                                onTap: () =>
+                                    context.pop(), // Pop to go back to login
+                                child: const Text(
+                                  AppStrings.login,
+                                  style: TextStyle(
+                                    color: AppTheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ],
                           ),

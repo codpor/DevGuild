@@ -68,16 +68,24 @@ class AuthProvider with ChangeNotifier {
     required String kelas,
     required String password,
   }) {
+    final validationError =
+        Validators.validateNIS(nis) ??
+        Validators.validateName(name) ??
+        Validators.validatePassword(password) ??
+        Validators.validateKelas(kelas);
+    if (validationError != null) {
+      return Failure(validationError, code: 'INVALID_INPUT');
+    }
     if (_repo.nisExists(nis.trim())) {
       return const Failure(AppStrings.nisAlreadyRegistered, code: 'NIS_EXISTS');
     }
 
     final newUser = UserModel(
-      id: 'u${(_repo as dynamic).userCount + 1}',
+      id: _repo.generateUserId(),
       nis: nis.trim(),
       password: PasswordHasher.hash(password),
       name: name.trim(),
-      kelas: kelas,
+      kelas: kelas.trim(),
       role: 'Siswa',
     );
     _repo.addUser(newUser);

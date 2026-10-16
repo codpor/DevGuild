@@ -246,7 +246,7 @@ void main() {
       'project revision preserves screenshots unless explicitly changed',
       () {
         auth.login('2202', 'password123');
-        final project = repo.getProjectById('p3')
+        final project = repo.getProjectById('p3')!
           ..screenshot = sample
           ..isRejected = true;
         expect(revise(), isA<Success<ProjectModel>>());

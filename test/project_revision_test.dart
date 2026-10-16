@@ -77,7 +77,7 @@ void main() {
     () {
       reject();
       auth.login('2202', 'password123');
-      final project = repo.getProjectById('p3');
+      final project = repo.getProjectById('p3')!;
       final createdAt = project.createdAt;
       final initialPoints = auth.currentUser!.poin;
       final count = projects.allProjects.length;
@@ -105,8 +105,8 @@ void main() {
     reject();
     auth.login('2201', 'password123');
     expect(revise(), isA<Failure<ProjectModel>>());
-    expect(repo.getProjectById('p3').isRejected, isTrue);
-    expect(repo.getProjectById('p3').title, 'Website Portofolio Personal');
+    expect(repo.getProjectById('p3')!.isRejected, isTrue);
+    expect(repo.getProjectById('p3')!.title, 'Website Portofolio Personal');
   });
 
   test('anonymous users and teachers cannot submit revisions', () {
@@ -114,7 +114,7 @@ void main() {
     expect(revise(), isA<Failure<ProjectModel>>());
     auth.login('9999', 'admin123');
     expect(revise(), isA<Failure<ProjectModel>>());
-    expect(repo.getProjectById('p3').isRejected, isTrue);
+    expect(repo.getProjectById('p3')!.isRejected, isTrue);
   });
 
   test('pending and approved projects cannot be revised', () {
@@ -144,8 +144,8 @@ void main() {
     ]) {
       expect(result, isA<Failure<ProjectModel>>());
     }
-    expect(repo.getProjectById('p3').isRejected, isTrue);
-    expect(repo.getProjectById('p3').title, 'Website Portofolio Personal');
+    expect(repo.getProjectById('p3')!.isRejected, isTrue);
+    expect(repo.getProjectById('p3')!.title, 'Website Portofolio Personal');
   });
 
   test('revision cannot be sent twice before review', () {
@@ -153,7 +153,7 @@ void main() {
     auth.login('2202', 'password123');
     expect(revise(), isA<Success<ProjectModel>>());
     expect(revise(title: 'Second revision'), isA<Failure<ProjectModel>>());
-    expect(repo.getProjectById('p3').title, 'Portofolio Revisi');
+    expect(repo.getProjectById('p3')!.title, 'Portofolio Revisi');
   });
 
   test('teacher approves revised project with a single points award', () {
@@ -165,8 +165,8 @@ void main() {
     auth.login('9999', 'admin123');
     projects.validateProject('p3', true);
     projects.validateProject('p3', true);
-    expect(repo.getProjectById('p3').isValidated, isTrue);
-    expect(repo.getProjectById('p3').isRejected, isFalse);
+    expect(repo.getProjectById('p3')!.isValidated, isTrue);
+    expect(repo.getProjectById('p3')!.isRejected, isFalse);
     expect(
       repo.getUserById('u4')!.poin,
       initialPoints + ProjectProvider.poinProjectValidated,

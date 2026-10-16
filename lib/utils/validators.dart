@@ -19,6 +19,7 @@ class Validators {
   /// Validasi Password: wajib diisi, minimal 6 karakter
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) return AppStrings.passwordRequired;
+    if (value.trim().isEmpty) return 'Password tidak boleh hanya berisi spasi.';
     if (value.length < 6) return AppStrings.passwordMinLength;
     return null;
   }
@@ -36,6 +37,13 @@ class Validators {
   static String? validateName(String? value) {
     if (value == null || value.trim().isEmpty) return AppStrings.nameRequired;
     if (value.trim().length < 3) return AppStrings.nameMinLength;
+    return null;
+  }
+
+  static String? validateKelas(String? value) {
+    if (value == null || !AppStrings.kelasList.contains(value.trim())) {
+      return 'Pilih kelas yang valid.';
+    }
     return null;
   }
 

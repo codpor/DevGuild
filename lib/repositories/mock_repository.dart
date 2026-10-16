@@ -192,8 +192,16 @@ class MockRepository extends AppRepository {
   @override
   bool nisExists(String nis) => _users.any((u) => u.nis == nis);
 
-  /// Jumlah total user (untuk generate ID baru)
-  int get userCount => _users.length;
+  int _nextUserId = 1;
+
+  @override
+  String generateUserId() {
+    String id;
+    do {
+      id = 'u${_nextUserId++}';
+    } while (getUserById(id) != null);
+    return id;
+  }
 
   // ────────────── Tickets ──────────────
 
@@ -201,8 +209,8 @@ class MockRepository extends AppRepository {
   List<TicketModel> getAllTickets() => List.from(_tickets);
 
   @override
-  TicketModel getTicketById(String ticketId) =>
-      _tickets.firstWhere((t) => t.id == ticketId);
+  TicketModel? getTicketById(String ticketId) =>
+      _tickets.where((t) => t.id == ticketId).firstOrNull;
 
   @override
   void addTicket(TicketModel ticket) => _tickets.insert(0, ticket);
@@ -213,8 +221,8 @@ class MockRepository extends AppRepository {
   List<ProjectModel> getAllProjects() => List.from(_projects);
 
   @override
-  ProjectModel getProjectById(String projectId) =>
-      _projects.firstWhere((p) => p.id == projectId);
+  ProjectModel? getProjectById(String projectId) =>
+      _projects.where((p) => p.id == projectId).firstOrNull;
 
   @override
   void addProject(ProjectModel project) => _projects.insert(0, project);
@@ -225,8 +233,8 @@ class MockRepository extends AppRepository {
   List<RoleRequestModel> getAllRoleRequests() => List.from(_roleRequests);
 
   @override
-  RoleRequestModel getRoleRequestById(String requestId) =>
-      _roleRequests.firstWhere((r) => r.id == requestId);
+  RoleRequestModel? getRoleRequestById(String requestId) =>
+      _roleRequests.where((r) => r.id == requestId).firstOrNull;
 
   @override
   void addRoleRequest(RoleRequestModel request) => _roleRequests.add(request);

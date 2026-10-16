@@ -10,22 +10,23 @@ abstract class AppRepository {
   List<UserModel> getAllSiswa();
   UserModel? getUserByNis(String nis);
   UserModel? getUserById(String id);
+  String generateUserId();
   void addUser(UserModel user);
   bool nisExists(String nis);
 
   // ────────────── Tickets ──────────────
   List<TicketModel> getAllTickets();
-  TicketModel getTicketById(String ticketId);
+  TicketModel? getTicketById(String ticketId);
   void addTicket(TicketModel ticket);
 
   // ────────────── Projects ──────────────
   List<ProjectModel> getAllProjects();
-  ProjectModel getProjectById(String projectId);
+  ProjectModel? getProjectById(String projectId);
   void addProject(ProjectModel project);
 
   // ────────────── Role Requests ──────────────
   List<RoleRequestModel> getAllRoleRequests();
-  RoleRequestModel getRoleRequestById(String requestId);
+  RoleRequestModel? getRoleRequestById(String requestId);
   void addRoleRequest(RoleRequestModel request);
 
   // ────────────── Leaderboard ──────────────
