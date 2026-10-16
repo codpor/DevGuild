@@ -1,7 +1,7 @@
 // lib/providers/ticket_provider.dart
 // Provider khusus manajemen tiket & balasan
 
-import 'package:flutter/material.dart';
+import '../repositories/repository_notifier.dart';
 
 import '../models/models.dart';
 import '../repositories/app_repository.dart';
@@ -10,11 +10,11 @@ import '../utils/result.dart';
 import '../utils/validators.dart';
 import 'auth_provider.dart';
 
-class TicketProvider with ChangeNotifier {
+class TicketProvider extends RepositoryNotifier {
   final AppRepository _repo;
   final AuthProvider _authProvider;
 
-  TicketProvider(this._repo, this._authProvider);
+  TicketProvider(this._repo, this._authProvider) : super(_repo);
 
   // ────────────── Poin Config ──────────────
   static const int poinCreateTicket = 5;

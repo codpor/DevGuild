@@ -1,7 +1,7 @@
 // lib/providers/auth_provider.dart
 // Provider khusus autentikasi & manajemen user
 
-import 'package:flutter/material.dart';
+import '../repositories/repository_notifier.dart';
 
 import '../models/models.dart';
 import '../models/local_image.dart';
@@ -12,10 +12,10 @@ import '../constants/app_strings.dart';
 import '../services/badge_service.dart';
 import '../utils/validators.dart';
 
-class AuthProvider with ChangeNotifier {
+class AuthProvider extends RepositoryNotifier {
   final AppRepository _repo;
 
-  AuthProvider(this._repo);
+  AuthProvider(this._repo) : super(_repo);
 
   // ────────────── State ──────────────
   UserModel? _currentUser;

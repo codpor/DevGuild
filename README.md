@@ -1,17 +1,60 @@
-# devguild
+# DevGuild
 
-A new Flutter project.
+Aplikasi Flutter untuk showcase karya, klinik kode, dan pengelolaan siswa PPLG.
 
-## Getting Started
+## Menjalankan
 
-This project is a starting point for a Flutter application.
+```sh
+flutter pub get
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
+Untuk web, gunakan origin dan port yang sama agar database browser yang sama dibuka:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```sh
+flutter run -d chrome --web-port 7357
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Akun demo siswa: NIS `2201`, password `password123`.
+Akun demo guru: NIS `9999`, password `admin123`.
+
+## Penyimpanan lokal
+
+Aplikasi menggunakan Sembast. Pada Android, iOS, dan desktop, database `devguild.db`
+berada di direktori application support milik aplikasi. Pada web, database `devguild`
+disimpan di IndexedDB browser. Data demo hanya diisi jika database belum memiliki state.
+
+Data tersimpan meliputi akun dan hash password, status aktif, foto profil,
+karya dan screenshot, revisi serta catatan guru, tiket beserta balasan,
+permohonan role, poin, badge, like, dan riwayat aktivitas.
+Gambar disimpan sebagai byte database sehingga tidak bergantung pada lokasi file asli.
+Pengguna masuk kembali setelah aplikasi dibuka; sesi login tidak disimpan.
+
+Perubahan provider memicu autosave. Notifikasi dalam satu aksi digabungkan, lalu
+seluruh state ditulis dalam satu transaksi. Indikator penyimpanan tetap tampil sampai
+penulisan selesai. Jika penyimpanan gagal, aplikasi menampilkan pesan dan tombol coba
+lagi, sementara database terakhir yang berhasil disimpan tetap dipertahankan.
+Penutupan normal desktop menunggu penyimpanan; pemaksaan berhenti saat indikator
+masih tampil dapat kehilangan perubahan yang belum selesai ditulis.
+
+Format data memiliki `schemaVersion` (saat ini `1`). Data rusak atau versi yang tidak
+didukung menghentikan proses membuka database dan menampilkan opsi coba lagi;
+aplikasi tidak menghapus atau mengganti data tersebut dengan data demo.
+Pada web, pemeriksaan revisi mencegah tab lama menimpa perubahan dari tab lain.
+Saat konflik, buka kembali aplikasi untuk memuat data terbaru. Gunakan satu instance
+aplikasi native untuk satu database file.
+
+Database ini berlaku per instalasi/perangkat atau origin browser. Menghapus data
+aplikasi/browser menghapus database lokal. Sinkronisasi antarperangkat dan autentikasi
+server membutuhkan integrasi backend pada tahap berikutnya.
+
+## Pemeriksaan
+
+```sh
+flutter analyze --no-pub
+flutter test --no-pub
+```
+
+`local_persistence_test.dart` memeriksa alur provider setelah repository dibuka ulang,
+kegagalan penyimpanan, konflik revisi, dan penutupan/pembukaan database file nyata.
+`storage_ui_test.dart` memeriksa tampilan gagal membuka, gagal menyimpan, dan retry.

@@ -1,11 +1,14 @@
 // lib/repositories/app_repository.dart
 // Abstract repository interface — kontrak data layer
-// Saat ini diimplementasikan oleh MockRepository (in-memory).
-// Nantinya bisa di-swap ke FirebaseRepository, ApiRepository, dll.
+// LocalRepository digunakan aplikasi; MockRepository digunakan untuk test.
+// Kontrak ini dapat diimplementasikan repository backend pada tahap berikutnya.
 
 import '../models/models.dart';
 
 abstract class AppRepository {
+  /// Dipanggil notifier setelah mutasi domain selesai; mock tetap di memori.
+  void markChanged() {}
+
   // ────────────── Users ──────────────
   List<UserModel> getAllSiswa();
   UserModel? getUserByNis(String nis);

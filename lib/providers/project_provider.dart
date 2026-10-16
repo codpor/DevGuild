@@ -1,7 +1,7 @@
 // lib/providers/project_provider.dart
 // Provider khusus manajemen proyek/karya
 
-import 'package:flutter/material.dart';
+import '../repositories/repository_notifier.dart';
 
 import '../models/models.dart';
 import '../models/local_image.dart';
@@ -11,11 +11,11 @@ import '../utils/result.dart';
 import '../utils/validators.dart';
 import 'auth_provider.dart';
 
-class ProjectProvider with ChangeNotifier {
+class ProjectProvider extends RepositoryNotifier {
   final AppRepository _repo;
   final AuthProvider _authProvider;
 
-  ProjectProvider(this._repo, this._authProvider);
+  ProjectProvider(this._repo, this._authProvider) : super(_repo);
 
   // ────────────── Poin Config ──────────────
   static const int poinProjectValidated = 50;

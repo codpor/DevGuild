@@ -1,18 +1,18 @@
 // lib/providers/role_provider.dart
 // Provider khusus manajemen role & permohonan role
 
-import 'package:flutter/material.dart';
+import '../repositories/repository_notifier.dart';
 
 import '../models/models.dart';
 import '../repositories/app_repository.dart';
 import '../utils/result.dart';
 import 'auth_provider.dart';
 
-class RoleProvider with ChangeNotifier {
+class RoleProvider extends RepositoryNotifier {
   final AppRepository _repo;
   final AuthProvider _authProvider;
 
-  RoleProvider(this._repo, this._authProvider);
+  RoleProvider(this._repo, this._authProvider) : super(_repo);
 
   // ────────────── Role Requirements Config ──────────────
   static const int mentorMinPoin = 50;
