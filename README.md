@@ -58,3 +58,5 @@ flutter test --no-pub
 `local_persistence_test.dart` memeriksa alur provider setelah repository dibuka ulang,
 kegagalan penyimpanan, konflik revisi, dan penutupan/pembukaan database file nyata.
 `storage_ui_test.dart` memeriksa tampilan gagal membuka, gagal menyimpan, dan retry.
+`application_flows_test.dart` menguji alur siswa–guru lengkap dan regresi layar kecil.
+Hasil dan batas pengujian perangkat tercatat di [laporan pengujian alur](docs/pengujian-alur.md).

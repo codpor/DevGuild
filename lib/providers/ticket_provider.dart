@@ -37,14 +37,17 @@ class TicketProvider extends RepositoryNotifier {
 
   // ────────────── Actions ──────────────
 
-  void addTicket(TicketModel ticket) {
+  Result<TicketModel> addTicket(TicketModel ticket) {
     final user = _authProvider.currentUser;
-    if (user == null ||
-        ticket.authorId != user.id ||
-        ticket.title.trim().isEmpty ||
-        ticket.description.trim().isEmpty ||
-        _repo.getAllTickets().any((existing) => existing.id == ticket.id)) {
-      return;
+    if (user == null || ticket.authorId != user.id) {
+      return const Failure('Silakan masuk dengan akun pemilik tiket.');
+    }
+    final error =
+        Validators.validateRequired(ticket.title, 'Judul tiket') ??
+        Validators.validateRequired(ticket.description, 'Deskripsi masalah');
+    if (error != null) return Failure(error, code: 'INVALID_INPUT');
+    if (ticket.id.trim().isEmpty || _repo.getTicketById(ticket.id) != null) {
+      return const Failure('ID tiket kosong atau sudah digunakan.');
     }
     _repo.addTicket(ticket);
 
@@ -60,21 +63,25 @@ class TicketProvider extends RepositoryNotifier {
     );
 
     notifyListeners();
+    return Success(ticket);
   }
 
-  void addReply(String ticketId, ReplyModel reply) {
+  Result<ReplyModel> addReply(String ticketId, ReplyModel reply) {
     final user = _authProvider.currentUser;
     if (user == null ||
         !_authProvider.canReplyToTicket() ||
-        reply.authorId != user.id ||
-        reply.content.trim().isEmpty) {
-      return;
+        reply.authorId != user.id) {
+      return const Failure('Akunmu tidak dapat mengirim balasan ini.');
     }
+    final error = Validators.validateRequired(reply.content, 'Balasan');
+    if (error != null) return Failure(error, code: 'INVALID_INPUT');
     final ticket = _repo.getTicketById(ticketId);
-    if (ticket == null ||
-        ticket.status == TicketStatus.solved ||
+    if (ticket == null) {
+      return const Failure('Tiket tidak ditemukan.', code: 'TICKET_NOT_FOUND');
+    }
+    if (ticket.status == TicketStatus.solved ||
         ticket.replies.any((r) => r.id == reply.id)) {
-      return;
+      return const Failure('Tiket sudah selesai atau balasan sudah dikirim.');
     }
     final firstReply = !ticket.replies.any((r) => r.authorId == user.id);
     ticket.replies.add(reply);
@@ -97,28 +104,32 @@ class TicketProvider extends RepositoryNotifier {
     );
 
     notifyListeners();
+    return Success(reply);
   }
 
-  void markSolved(String ticketId, String replyId) {
+  Result<ReplyModel> markSolved(String ticketId, String replyId) {
     final user = _authProvider.currentUser;
     final ticket = _repo.getTicketById(ticketId);
     if (user == null ||
         ticket == null ||
         ticket.authorId != user.id ||
         ticket.status == TicketStatus.solved) {
-      return;
+      return const Failure(
+        'Hanya pemilik tiket aktif yang dapat memilih jawaban.',
+      );
     }
     final reply = ticket.replies.where((r) => r.id == replyId).firstOrNull;
     if (reply == null ||
         reply.isAccepted ||
         reply.authorId == ticket.authorId) {
-      return;
+      return const Failure('Pilih balasan orang lain yang belum diterima.');
     }
     ticket.status = TicketStatus.solved;
     reply.isAccepted = true;
     _authProvider.addPoinToUser(reply.authorId, poinAcceptedReply);
 
     notifyListeners();
+    return Success(reply);
   }
 
   // ────────────── Moderator Actions ──────────────

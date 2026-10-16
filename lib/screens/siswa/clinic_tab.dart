@@ -18,6 +18,12 @@ class _ClinicTabState extends State<ClinicTab> {
   final _searchC = TextEditingController();
 
   @override
+  void dispose() {
+    _searchC.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final ticketProvider = Provider.of<TicketProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
@@ -89,22 +95,21 @@ class _ClinicTabState extends State<ClinicTab> {
           // ── Filter Chips
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Row(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
               children: ['Semua', 'Terbuka', 'Proses', 'Solved']
                   .map(
-                    (label) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(label),
-                        selected: _filter == label,
-                        onSelected: (_) => setState(() => _filter = label),
-                        selectedColor: AppTheme.primary,
-                        labelStyle: TextStyle(
-                          color: _filter == label
-                              ? Colors.white
-                              : AppTheme.textSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    (label) => ChoiceChip(
+                      label: Text(label),
+                      selected: _filter == label,
+                      onSelected: (_) => setState(() => _filter = label),
+                      selectedColor: AppTheme.primary,
+                      labelStyle: TextStyle(
+                        color: _filter == label
+                            ? Colors.white
+                            : AppTheme.textSecondary,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   )
@@ -148,6 +153,7 @@ class _ClinicTabState extends State<ClinicTab> {
     final titleC = TextEditingController();
     final descC = TextEditingController();
     final errorC = TextEditingController();
+    String? submitError;
     String category = 'PHP & MySQL';
     final provider = Provider.of<TicketProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -176,14 +182,15 @@ class _ClinicTabState extends State<ClinicTab> {
               children: [
                 Row(
                   children: [
-                    const Text(
-                      'Buat Tiket Baru',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                    const Expanded(
+                      child: Text(
+                        'Buat Tiket Baru',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    const Spacer(),
                     IconButton(
                       onPressed: () => Navigator.pop(ctx),
                       icon: const Icon(Icons.close),
@@ -247,10 +254,19 @@ class _ClinicTabState extends State<ClinicTab> {
                   ),
                 ),
                 const SizedBox(height: 24),
+                if (submitError != null) ...[
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      submitError!,
+                      style: const TextStyle(color: AppTheme.error),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 ElevatedButton(
                   onPressed: () {
-                    if (titleC.text.isEmpty || descC.text.isEmpty) return;
-                    provider.addTicket(
+                    final result = provider.addTicket(
                       TicketModel(
                         id: 't${DateTime.now().millisecondsSinceEpoch}',
                         authorId: user.id,
@@ -264,6 +280,10 @@ class _ClinicTabState extends State<ClinicTab> {
                         replies: [],
                       ),
                     );
+                    if (result is Failure<TicketModel>) {
+                      setModalState(() => submitError = result.message);
+                      return;
+                    }
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -311,116 +331,121 @@ class _TicketCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => TicketDetailScreen(ticket: ticket)),
-      ),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _statusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      _statusLabel,
-                      style: TextStyle(
-                        color: _statusColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => TicketDetailScreen(ticket: ticket)),
+        ),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _statusColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _statusLabel,
+                        style: TextStyle(
+                          color: _statusColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        ticket.category,
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 11,
+                        ),
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      ticket.category,
+                    Text(
+                      _timeAgo(ticket.createdAt),
                       style: const TextStyle(
                         color: AppTheme.textSecondary,
                         fontSize: 11,
                       ),
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    _timeAgo(ticket.createdAt),
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Text(
-                ticket.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  ],
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                ticket.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 13,
+                const SizedBox(height: 10),
+                Text(
+                  ticket.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.person_outline,
-                    size: 14,
+                const SizedBox(height: 6),
+                Text(
+                  ticket.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
                     color: AppTheme.textSecondary,
+                    fontSize: 13,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${ticket.authorName} · ${ticket.authorKelas}',
-                    style: const TextStyle(
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.person_outline,
+                      size: 14,
                       color: AppTheme.textSecondary,
-                      fontSize: 12,
                     ),
-                  ),
-                  const Spacer(),
-                  const Icon(
-                    Icons.chat_bubble_outline,
-                    size: 14,
-                    color: AppTheme.textSecondary,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${ticket.replies.length} balasan',
-                    style: const TextStyle(
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        '${ticket.authorName} · ${ticket.authorKelas}',
+                        style: const TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.chat_bubble_outline,
+                      size: 14,
                       color: AppTheme.textSecondary,
-                      fontSize: 12,
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 4),
+                    Text(
+                      '${ticket.replies.length} balasan',
+                      style: const TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -522,10 +547,11 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
                           children: [
                             _StatusBadge(ticket.status),
-                            const SizedBox(width: 8),
                             Chip(
                               label: Text(
                                 ticket.category,
@@ -579,11 +605,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                               color: AppTheme.textSecondary,
                             ),
                             const SizedBox(width: 4),
-                            Text(
-                              '${ticket.authorName} · ${ticket.authorKelas}',
-                              style: const TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 12,
+                            Expanded(
+                              child: Text(
+                                '${ticket.authorName} · ${ticket.authorKelas}',
+                                style: const TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ],
@@ -609,7 +637,15 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     ticket: ticket,
                     currentUser: user,
                     onAccept: () {
-                      ticketProvider.markSolved(ticket.id, reply.id);
+                      final result = ticketProvider.markSolved(
+                        ticket.id,
+                        reply.id,
+                      );
+                      if (result is Failure<ReplyModel>) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(result.message)));
+                      }
                     },
                   ),
                 ),
@@ -676,14 +712,14 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   CircleAvatar(
                     backgroundColor: AppTheme.primary,
                     child: IconButton(
+                      tooltip: 'Kirim balasan',
                       icon: const Icon(
                         Icons.send,
                         color: Colors.white,
                         size: 20,
                       ),
                       onPressed: () {
-                        if (_replyC.text.isEmpty) return;
-                        ticketProvider.addReply(
+                        final result = ticketProvider.addReply(
                           ticket.id,
                           ReplyModel(
                             id: 'r${DateTime.now().millisecondsSinceEpoch}',
@@ -694,6 +730,12 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                             createdAt: DateTime.now(),
                           ),
                         );
+                        if (result is Failure<ReplyModel>) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(result.message)),
+                          );
+                          return;
+                        }
                         _replyC.clear();
                       },
                     ),
@@ -719,11 +761,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     color: AppTheme.textSecondary,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'Hanya Mentor/Moderator yang dapat menjawab tiket',
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 13,
+                  Expanded(
+                    child: Text(
+                      'Hanya Mentor/Moderator yang dapat menjawab tiket',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ],
@@ -825,80 +869,70 @@ class _ReplyCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        reply.authorName,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      if (reply.authorRole == UserRole.mentor) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.success.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'Mentor',
-                            style: TextStyle(
-                              color: AppTheme.success,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        Text(
+                          reply.authorName,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        if (reply.authorRole == UserRole.mentor) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.success.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Mentor',
+                              style: TextStyle(
+                                color: AppTheme.success,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                      if (reply.authorRole == UserRole.moderator) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.warning.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'Moderator',
-                            style: TextStyle(
-                              color: AppTheme.warning,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                        ],
+                        if (reply.authorRole == UserRole.moderator) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.warning.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Moderator',
+                              style: TextStyle(
+                                color: AppTheme.warning,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
-                    ],
-                  ),
-                  Text(
-                    _timeAgo(reply.createdAt),
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 11,
                     ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              if (isAccepted)
-                const Chip(
-                  label: Text('✓ Jawaban Terbaik'),
-                  backgroundColor: AppTheme.success,
-                  labelStyle: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  padding: EdgeInsets.zero,
+                    Text(
+                      _timeAgo(reply.createdAt),
+                      style: const TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
               if (Provider.of<AuthProvider>(
                 context,
                 listen: false,
@@ -931,6 +965,18 @@ class _ReplyCard extends StatelessWidget {
               ],
             ],
           ),
+          if (isAccepted) ...[
+            const SizedBox(height: 8),
+            const Chip(
+              label: Text('✓ Jawaban Terbaik'),
+              backgroundColor: AppTheme.success,
+              labelStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
           const SizedBox(height: 10),
           Text(
             reply.content,

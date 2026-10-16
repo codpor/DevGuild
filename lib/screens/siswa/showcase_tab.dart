@@ -25,6 +25,7 @@ class ShowcaseTab extends StatelessWidget {
         title: const Text('Showcase Karya'),
         actions: [
           IconButton(
+            tooltip: 'Upload Karya',
             icon: const Icon(Icons.add_circle_outline),
             onPressed: () => _showAddProjectDialog(context),
           ),
@@ -54,6 +55,7 @@ class ShowcaseTab extends StatelessWidget {
     final teamC = TextEditingController();
     final techC = TextEditingController();
     LocalImage? screenshot;
+    String? submitError;
     String category = 'Web App';
     final projectProvider = Provider.of<ProjectProvider>(
       context,
@@ -88,14 +90,15 @@ class ShowcaseTab extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Text(
-                      'Upload Karya',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                    const Expanded(
+                      child: Text(
+                        'Upload Karya',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    const Spacer(),
                     IconButton(
                       onPressed: () => Navigator.pop(ctx),
                       icon: const Icon(Icons.close),
@@ -200,6 +203,16 @@ class ShowcaseTab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
+                if (submitError != null) ...[
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      submitError!,
+                      style: const TextStyle(color: AppTheme.error),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 ElevatedButton(
                   onPressed: () {
                     final teamList = teamC.text.isEmpty
@@ -234,12 +247,7 @@ class ShowcaseTab extends StatelessWidget {
                       ),
                     );
                     if (result is Failure<ProjectModel>) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(result.message),
-                          backgroundColor: AppTheme.error,
-                        ),
-                      );
+                      setModalState(() => submitError = result.message);
                       return;
                     }
                     Navigator.pop(ctx);
@@ -350,21 +358,25 @@ class _ProjectCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: catColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          project.category,
-                          style: TextStyle(
-                            color: catColor,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: catColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            project.category,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: catColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),

@@ -46,6 +46,7 @@ class GuruDashboard extends StatelessWidget {
         ),
         actions: [
           IconButton(
+            tooltip: 'Keluar',
             icon: const Icon(Icons.logout),
             onPressed: () => _showLogoutDialog(context, authProvider),
           ),

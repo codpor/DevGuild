@@ -112,7 +112,9 @@ class _PendingProjectCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -132,7 +134,6 @@ class _PendingProjectCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Spacer(),
                 Text(
                   project.category,
                   style: const TextStyle(
